@@ -1,5 +1,3 @@
----
-
 # Install NodeJS Using NVM
 
 To install and manage multiple Node.js versions on **Ubuntu**, we can use **Node Version Manager (NVM)**. NVM allows us to install multiple versions of Node.js and switch between them easily.
@@ -81,5 +79,3 @@ nvm uninstall 16
 ```
 
 **This setup should allow us to easily manage multiple versions of Node.js**
-
----

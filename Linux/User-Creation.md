@@ -1,5 +1,3 @@
----
-
 # 🖥️ User Creation
 
 This guide explains how to create a new user on a Linux VM, set up SSH access using public-private key pairs, and configure ssh-agent for easier authentication.
@@ -91,5 +89,3 @@ ssh-copy-id username@<IP>
 ```
 
 Copies your public key to the remote server for passwordless login.
-
----

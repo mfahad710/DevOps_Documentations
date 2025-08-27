@@ -1,5 +1,3 @@
----
-
 # 🔑 Generating SSH Key Pairs
 
 ## Introduction
@@ -91,5 +89,3 @@ This command adds your public key to the server’s `~/.ssh/authorized_keys`, en
 **Public key usage:** Add `id_rsa.pub` or `id_ed25519.pub` to the remote server’s `~/.ssh/authorized_keys`.
 
 **Recommendation:** Use Ed25519 unless you must support very old systems.
-
----

@@ -1,5 +1,3 @@
----
-
 # 📘 Linux Alias – Guide
 
 Aliases are shortcuts for commands that facilitate more productive work on the terminal. This guide shows how to set up aliases in Linux.
@@ -150,6 +148,5 @@ Now our aliases will work for all users automatically at login.
 2. **Group related aliases**: Add comments to organize your aliases
 3. **Backup your .bashrc**: Keep a backup of your configuration file
 
----
 
 *This documentation covers the essential steps for setting up and managing aliases in Linux systems.*
