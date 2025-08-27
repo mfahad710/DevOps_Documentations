@@ -1,6 +1,6 @@
 ---
 
-# Generating SSH Key Pairs
+# 🔑 Generating SSH Key Pairs
 
 ## Introduction
 
@@ -12,11 +12,11 @@ In cryptography, a key pair consists of
 
 SSH (**Secure Shell**) commonly uses public-key cryptography for secure access to servers. Two popular algorithms are
 
-- **RSA (Rivest–Shamir–Adleman)**
+- 🔒 **RSA (Rivest–Shamir–Adleman)**
 
 RSA is a widely used algorithm based on **prime factorization**. Keys range from **2048** to **4096** bits, with larger sizes offering stronger security. It is slower in signing and verification but highly compatible across all systems, making it useful where legacy support is needed.
 
-- **Ed25519 (Edwards-curve Digital Signature Algorithm 25519)**
+- 🔒 **Ed25519 (Edwards-curve Digital Signature Algorithm 25519)**
 
 Ed25519 is a modern **elliptic curve** algorithm with a fixed **256-bit** key size. It is faster, more efficient, and provides around **128-bit** security. Supported in **OpenSSH 6.5** and later, it is recommended for new deployments due to its speed and strength, though less suited for older systems.
 
