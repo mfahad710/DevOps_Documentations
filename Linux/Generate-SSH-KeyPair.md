@@ -73,6 +73,17 @@ ssh-keygen -lf ~/.ssh/id_rsa.pub
 ssh-keygen -lf ~/.ssh/id_ed25519.pub
 ```
 
+## Copying Keys to a Server
+
+To use the public key for SSH login, copy it to the server:
+
+```bash
+ssh-copy-id username@<Server-IP>
+```
+
+
+This command adds your public key to the server’s `~/.ssh/authorized_keys`, enabling passwordless login.
+
 ## Best Practice
 
 **Permissions:** Ensure private keys are `chmod 600`.
