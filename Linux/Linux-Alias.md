@@ -1,3 +1,5 @@
+---
+
 # 📘 Linux Alias – Guide
 
 Aliases are shortcuts for commands that facilitate more productive work on the terminal. This guide shows how to set up aliases in Linux.
