@@ -80,6 +80,6 @@ To uninstall a specific version of Node.js:
 nvm uninstall 16
 ```
 
-** This setup should allow us to easily manage multiple versions of Node.js **
+**This setup should allow us to easily manage multiple versions of Node.js**
 
 ---
