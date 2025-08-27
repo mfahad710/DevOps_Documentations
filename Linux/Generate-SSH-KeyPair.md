@@ -4,13 +4,13 @@
 
 ## Introduction
 
-In cryptography, a key pair consists of:
+In cryptography, a key pair consists of
 
 - **Private key** → kept secret, used for authentication/signing.
 
 - **Public key** → shared openly, used for verification/encryption.
 
-SSH (**Secure Shell**) commonly uses public-key cryptography for secure access to servers. Two popular algorithms are:
+SSH (**Secure Shell**) commonly uses public-key cryptography for secure access to servers. Two popular algorithms are
 
 - **RSA (Rivest–Shamir–Adleman)**
 
@@ -22,7 +22,7 @@ Ed25519 is a modern **elliptic curve** algorithm with a fixed **256-bit** key si
 
 ## Generating RSA Keys
 
-To generate a **4096-bit** RSA key pair:
+To generate a **4096-bit** RSA key pair
 
 ```bash
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
@@ -34,7 +34,7 @@ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 
 - `-C` → adds a comment (often your **email**)
 
-This will create:
+This will create
 
 - `~/.ssh/id_rsa` → private key
 
@@ -42,7 +42,7 @@ This will create:
 
 ## Generating Ed25519 Keys
 
-To generate an Ed25519 key pair:
+To generate an Ed25519 key pair
 
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com"
@@ -52,7 +52,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 
 - `-C` → adds a comment (often your **email**)
 
-This will create:
+This will create
 
 - `~/.ssh/id_ed25519` → private key
 
@@ -60,13 +60,13 @@ This will create:
 
 ## Verifying the Keys
 
-List your generated keys:
+List your generated keys
 
 ```bash
 ls ~/.ssh/id_*
 ```
 
-Check details of a key:
+Check details of a key
 
 ```bash
 ssh-keygen -lf ~/.ssh/id_rsa.pub
