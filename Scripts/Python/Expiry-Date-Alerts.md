@@ -204,3 +204,9 @@ Email sent successfully to muhammad.fahad@gmail.com Skipping email for **TestKey
   - Protect the Google Sheets service account key file.
 - Email Recipients:
   - Ensure `from_email` is verified in SendGrid.
+
+## CronJob
+
+```bash
+0 10 * * * /bin/bash -c 'source /home/ubuntu/drive/scripts/expiryAlerts/expiryAlerts/bin/activate && python3 /home/ubuntu/drive/scripts/expiryAlerts/expiryAlerts.py >> /home/ubuntu/drive/scripts/expiryAlerts/logs/expiryAlerts.log 2>&1'
+```
