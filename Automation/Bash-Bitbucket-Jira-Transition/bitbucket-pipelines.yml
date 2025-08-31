@@ -1,0 +1,81 @@
+image: atlassian/default-image:3
+
+pipelines:
+  custom:
+    
+    jira-release-testing:
+      - step:
+          name: "Merging branches into release and Transitioning Jira Tickets on Release Testing."
+          deployment: jira-release-testing
+          script:
+            - echo "JIRA BASE URL; $JIRA_BASE_URL"
+            - apt-get update && apt-get install -y jq
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/release-testing-transition.sh
+            - /bin/bash ./transition-scripts/release-testing-transition.sh
+            
+    jira-release-stage:
+      - step:
+          name: "Merging Release with Stage and Transitioning Jira Tickets on Stage Testing."
+          deployment: jira-release-stage
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Stage Transition Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/release-stage-transition.sh
+            - /bin/bash ./transition-scripts/release-stage-transition.sh
+
+    jira-release-deployment:
+      - step:
+          name: "Merging Stage(release merged into stage) in to Prod and Dev and Transitioning Jira Tickets on Deployment."
+          deployment: jira-release-deployment
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Production Transition Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/release-deployment-transition.sh
+            - /bin/bash ./transition-scripts/release-deployment-transition.sh
+
+    jira-hotfix-stage:
+      - step:
+          name: "Merging and Transitioning Jira Tickets on Hotfix Stage."
+          deployment: jira-hotfix-stage
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Hotfix Stage Transition Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/hotfix-stage-transition.sh
+            - /bin/bash ./transition-scripts/hotfix-stage-transition.sh
+
+    jira-hotfix-deployment:
+      - step:
+          name: "Merging Stage(hotfix branches merged into stage) in to Prod and Dev and Transitioning Jira Tickets on Deployment."
+          deployment: jira-hotfix-deployment
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Production Transition Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/hotfix-deployment-transition.sh
+            - /bin/bash ./transition-scripts/hotfix-deployment-transition.sh
+
+    jira-release-hotfix-done:
+      - step:
+          name: "Transitioning Jira Tickets from Deployment to Done."
+          deployment: jira-release-hotfix-done
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Transition Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/release-hotfix-done-transition.sh
+            - /bin/bash ./transition-scripts/release-hotfix-done-transition.sh
+
+    release-discard:
+      - step:
+          name: "Discarding Release"
+          deployment: release-discard
+          script:
+            - apt-get update && apt-get install -y jq
+            - echo "Discarding Release Pipeline running from Jira Automation"
+            # Fetch all open pull requests
+            - chmod +x ./transition-scripts/discard-release.sh
+            - /bin/bash ./transition-scripts/discard-release.sh
