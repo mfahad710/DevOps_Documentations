@@ -27,3 +27,15 @@ It is designed to handle the transition of **release branches** → **stage bran
 - Creating PRs for `stage` → `dev` and `stage` → `prod`.
 - Applying branch restrictions back on the **stage** branch.
 - Reverting Jira DevOps transition if validations fail.  
+
+## release-deployment-transition
+
+- All issues of the latest unreleased version are in `Deployment` state.
+- All `stage` → `prod` and `stage` → `dev` pull requests (PRs) are approved and merged.
+- If successful:
+  - The Jira version is released.
+  - New release branches are created in repositories.
+  - Branch restrictions are applied.
+  - PRs targeting old release branches are updated to the new release.
+- If unsuccessful:
+  - The Jira DevOps transition is reverted from `Deployment` → `Stage Testing`.  
