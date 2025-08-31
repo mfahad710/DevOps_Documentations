@@ -38,4 +38,117 @@ It is designed to handle the transition of **release branches** → **stage bran
   - Branch restrictions are applied.
   - PRs targeting old release branches are updated to the new release.
 - If unsuccessful:
-  - The Jira DevOps transition is reverted from `Deployment` → `Stage Testing`.  
+  - The Jira DevOps transition is reverted from `Deployment` → `Stage Testing`. 
+
+```text
+            ┌──────────────────────────────┐
+            │   Start Script (Jira trigger)│
+            └───────────────┬──────────────┘
+                            ▼
+           ┌─────────────────────────────────┐
+           │ Get latest unreleased Jira version│
+           └────────────────┬────────────────┘
+                            ▼
+           ┌─────────────────────────────────┐
+           │ Collect issues with that version │
+           │ in "Deployment" status           │
+           └────────────────┬────────────────┘
+                            ▼
+           ┌─────────────────────────────────┐
+           │ For each repo: check open PRs    │
+           │ stage→prod AND stage→dev         │
+           └────────────────┬────────────────┘
+                            ▼
+           ┌─────────────────────────────────┐
+           │ For each PR:                     │
+           │ - If OPEN: check approvals       │
+           │   → merge if approved            │
+           │   → else revert transition       │
+           │ - If MERGED: count as merged     │
+           └────────────────┬────────────────┘
+                            ▼
+          ┌───────────────────────────────────┐
+          │ All PRs merged?                   │
+          └───────────┬───────────┬──────────┘
+                      │Yes        │No
+                      ▼           ▼
+   ┌───────────────────────────┐  ┌───────────────────────┐
+   │ Check Jira issues:        │  │ Revert transition to  │
+   │ all in Deployment?        │  │ "Stage Testing"       │
+   └──────────────┬────────────┘  └───────────────────────┘
+                  ▼
+       ┌───────────────────────────┐
+       │ Release Jira version       │
+       └──────────────┬────────────┘
+                      ▼
+   ┌────────────────────────────────────┐
+   │ For each repo:                      │
+   │ - Create new release branch         │
+   │ - Recreate PRs for new release      │
+   │ - Update old PRs → new branch       │
+   │ - Apply branch restrictions         │
+   └────────────────────────────────────┘
+                      ▼
+            ┌─────────────────────┐
+            │ End (Release done)  │
+            └─────────────────────┘
+``` 
+
+## hotfix-stage-transition
+
+This Bash script automates the Stage Transition Process from `Stage Deployment` → `Stage Testing` in Jira, while handling hotfix pull requests (PRs) across multiple Bitbucket repositories.
+
+- Only Jira issues in `Stage Deployment` are transitioned.
+- Hotfix PRs targeting the `stage` branch are merged automatically.
+- If all repositories meet merge conditions, deployment & Jira transitions proceed.
+- Otherwise, the pipeline reverts Jira DevOps transition and re-applies branch restrictions.
+
+```text
+                  ┌─────────────────────┐
+                  │ Start Script        │
+                  └───────┬─────────────┘
+                          │
+                          ▼
+             ┌─────────────────────────┐
+             │ Get Jira issues in      │
+             │ status "Stage Deployment"│
+             └───────┬─────────────────┘
+                     │
+         ┌───────────▼────────────┐
+         │ For each repository    │
+         │ (backend, frontend,    │
+         │ license):              │
+         └───────────┬────────────┘
+                     │
+                     ▼
+        ┌───────────────────────────────┐
+        │ Remove branch restrictions    │
+        │ Get hotfix PRs → stage        │
+        │ Merge if approved             │
+        └───────────┬───────────────────┘
+                    │
+   ┌────────────────▼───────────────────┐
+   │ Compare Approved vs Merged PRs     │
+   └────────────────┬───────────────────┘
+                    │
+       ┌────────────┼───────────────┐
+       │ Yes: Match │ No: Mismatch  │
+       ▼            ▼
+┌────────────────┐ ┌────────────────────────────┐
+│ Transition Jira│ │ Revert DevOps transition   │
+│ Issues → Stage │ │ Apply branch restrictions  │
+│ Testing        │ │ Exit script                │
+└───────┬────────┘ └────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────┐
+│ Create PRs (stage→prod, dev)  │
+│ Deploy Stage via pipelines    │
+│ Reapply branch restrictions   │
+└───────────────────────────────┘
+        │
+        ▼
+   ┌─────────────┐
+   │ End Script  │
+   └─────────────┘
+```
