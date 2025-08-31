@@ -266,7 +266,7 @@ create_pull_request_from_release_stage(){
         REPO_BASE_URL="https://api.bitbucket.org/2.0/repositories/fort/$REPO"
         echo "Creating a pull request from release branch to stage branch in $REPO."
 
-        PR_PAYLOAD="{\"title\": \"Pull request for: release/$FIRST_UNRELEASED_VERSION to Stage\", \"source\": {\"branch\": {\"name\": \"release/$FIRST_UNRELEASED_VERSION\"}}, \"destination\": {\"branch\": {\"name\": \"stage\"}}, \"description\": \"Created by BitBucket REST API\", \"close_source_branch\": false, \"reviewers\":[{\"display_name\": \"Fort-Admin\", \"uuid\": \"{b55e5165-481g-4cc8-84a3-96c19de7d218}\" }, { \"display_name\": \"Fahad\", \"uuid\": \"{6e57cf78-4141-698d-959d-8f3e5e8995aa}\" }]}"
+        PR_PAYLOAD="{\"title\": \"Pull request for: release/$FIRST_UNRELEASED_VERSION to Stage\", \"source\": {\"branch\": {\"name\": \"release/$FIRST_UNRELEASED_VERSION\"}}, \"destination\": {\"branch\": {\"name\": \"stage\"}}, \"description\": \"Created by BitBucket REST API\", \"close_source_branch\": false, \"reviewers\":[{\"display_name\": \"Fort Admin\", \"uuid\": \"{b55e5165-481g-4cc8-84a3-96c19de7d218}\" }, { \"display_name\": \"Fahad\", \"uuid\": \"{6e57cf78-4141-698d-959d-8f3e5e8995aa}\" }]}"
         
         # Create and display the response
         RESPONSE=$(curl -X POST "$REPO_BASE_URL/pullrequests/" -H "Authorization:Basic $BB_API_TOKEN" -H "Content-Type:application/json" -d "$PR_PAYLOAD")
