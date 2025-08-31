@@ -152,3 +152,78 @@ This Bash script automates the Stage Transition Process from `Stage Deployment` 
    │ End Script  │
    └─────────────┘
 ```
+
+## hotfix-deployment-transition
+
+- Verifying Jira hotfix issues in `Deployment` status have valid **fixVersions**.
+- Fetching open pull requests (PRs) from `Stage → Prod` and `Stage → Dev` in Bitbucket.
+- Checking approval & merge status of those PRs.
+- If all reviewers approved, merging PRs automatically.
+- If PRs are unapproved/unmerged, reverting Jira’s DevOps transition and exiting.
+- If all stage PRs merge successfully, creating new PRs from `Dev → Release/FIRST_UNRELEASED_VERSION`.
+
+```text
+                    ┌──────────────────────┐
+                    │ Start Script         │
+                    └─────────┬────────────┘
+                              │
+                              ▼
+              ┌────────────────────────────────┐
+              │ Get Jira issues: status=Deployment│
+              │ Ensure fixVersion is released   │
+              └─────────────────┬──────────────┘
+                                │
+                                ▼
+               ┌─────────────────────────────────┐
+               │ Extract repositories (hotfixes) │
+               └─────────────────┬───────────────┘
+                                 │
+                     ┌───────────▼───────────┐
+                     │ For each repository   │
+                     └───────────┬───────────┘
+                                 │
+                                 ▼
+                ┌─────────────────────────────────┐
+                │ Find PRs: Stage→Prod & Stage→Dev │
+                └─────────────────┬───────────────┘
+                                 │
+                ┌────────────────▼────────────────┐
+                │ Check PR state:                  │
+                │  - If OPEN → check approvals      │
+                │  - If approved → Merge            │
+                │  - If not approved → Revert Jira  │
+                │  - If MERGED already → continue   │
+                └────────────────┬─────────────────┘
+                                 │
+                                 ▼
+                  ┌─────────────────────────┐
+                  │ Update approved/merged   │
+                  │ counters per repository  │
+                  └───────────┬─────────────┘
+                              │
+                              ▼
+           ┌─────────────────────────────────────────┐
+           │ After all repos processed:               │
+           │  Compare approved vs merged counts       │
+           └───────────────────┬─────────────────────┘
+                               │
+               ┌───────────────┼───────────────────┐
+               │ All merged    │ Some unmerged     │
+               ▼               ▼
+ ┌─────────────────────────┐  ┌────────────────────────────┐
+ │ Get FIRST_UNRELEASED_   │  │ Call revert_devops_transition │
+ │ VERSION from Jira        │  │ Move DevOps → Stage Testing  │
+ │ Create PR: dev→release   │  │ Exit script                  │
+ └───────────┬─────────────┘  └────────────────────────────┘
+             │
+             ▼
+ ┌───────────────────────────┐
+ │ Manual deploy hotfix to   │
+ │ Production (outside script)│
+ └───────────┬───────────────┘
+             │
+             ▼
+        ┌────────────┐
+        │ End Script │
+        └────────────┘
+```
