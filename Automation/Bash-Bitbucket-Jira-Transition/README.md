@@ -227,3 +227,69 @@ This Bash script automates the Stage Transition Process from `Stage Deployment` 
         │ End Script │
         └────────────┘
 ```
+
+## release-hotfix-done-transition
+
+This script automates the release finalization process for Jira issues and Bitbucket repositories.
+
+- Jira issues in **"Deployment"** status are transitioned to **"Done"**.
+- Open PRs from `dev → release/*` branches are merged.
+- Branch restrictions on release branches are temporarily removed and then re-applied after merges.
+
+```text
+                        ┌────────────────────┐
+                        │ Start Script       │
+                        └───────┬────────────┘
+                                │
+                                ▼
+                ┌────────────────────────────────┐
+                │ Get Jira Versions               │
+                │ - Released Version              │
+                │ - First Unreleased Version      │
+                └────────────────┬────────────────┘
+                                 │
+                                 ▼
+                ┌────────────────────────────────┐
+                │ Get Jira issues in "Deployment" │
+                └────────────────┬────────────────┘
+                                 │
+                    ┌────────────┴─────────────┐
+                    │ All issues in Deployment? │
+                    └───────┬───────────┬──────┘
+                            │Yes        │ No
+                            ▼           ▼
+       ┌────────────────────────────┐   ┌─────────────────────────┐
+       │ Transition issues → Done    │   │ Exit: Not all issues in │
+       └───────┬────────────────────┘   │ "Deployment"            │
+               │                        └─────────────────────────┘
+               ▼
+ ┌─────────────────────────────────────────┐
+ │ For each repo (backend, frontend, license)│
+ └───────────────────┬──────────────────────┘
+                     │
+                     ▼
+     ┌──────────────────────────────────────┐
+     │ Get all open PRs (source = dev)       │
+     └───────────────────┬──────────────────┘
+                         │
+             ┌───────────┴─────────────┐
+             │ For each PR              │
+             └───────────┬─────────────┘
+                         │
+                         ▼
+        ┌──────────────────────────────────┐
+        │ Destination branch = release/* ? │
+        └──────────────┬───────────────────┘
+                       │Yes                │ No
+                       ▼                   ▼
+  ┌────────────────────────────────┐   ┌───────────────────────┐
+  │ Remove branch restrictions     │   │ Merge PR directly      │
+  │ Merge PR (dev → release/*)     │   └───────────────────────┘
+  │ Reapply branch restrictions    │
+  └────────────────────────────────┘
+                       │
+                       ▼
+            ┌───────────────────────┐
+            │ End Script             │
+            └───────────────────────┘
+```
