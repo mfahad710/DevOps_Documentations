@@ -1,0 +1,38 @@
+name: Deploy Branch to Production Azure App Service
+run-name: ${{ github.actor }}
+on: workflow_dispatch
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: "Build"
+        run: |
+          export CI=false
+          mv src/config/config.env.js src/config/config.js
+          nvm install 20
+          npm install --legacy-peer-deps
+          npm run build
+          zip -r ../fort-frontend-$GITHUB_RUN_ID.zip .
+
+      - name: "Upload Build Artifacts"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts 
+          path: fort-frontend-*.zip
+      
+      - name: "Deploy to Azure"
+        uses: azure/webapps-deploy@v2
+        with: 
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: fort-frontend-$GITHUB_RUN_ID.zip
+
+      - name: Trigger Sandbox Pipeline 
+        run: |
+          echo "Trigger Sandbox Pipeline"
+          curl -L -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GH_API_TOKEN }}" ${{ vars.GH_FRONTEND_URL }}/actions/workflows/sandbox.yml/dispatches -d '{"ref":"prod"}'

@@ -1,0 +1,36 @@
+name: Deploy Branch to Sandbox Server
+run-name: ${{ github.actor }}
+on: workflow_dispatch
+
+jobs:
+  sandbox:
+   runs-on: ubuntu-latest
+   environment: sandbox
+   steps:
+    - name: Checkout branch
+      uses: actions/checkout@v3
+
+    - name: SSH into Sandbox Server
+      uses: appleboy/ssh-action@v1.0.0
+      env: 
+        GITHUB_REF_NAME: $GITHUB_REF_NAME
+        CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
+        BACKEND_PATH: ${{ vars.BACKEND_PATH}}
+
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        envs: GITHUB_REF_NAME, CONTAINER_NAME, BACKEND_PATH
+        script: |
+          cd $BACKEND_PATH
+          git stash
+          git fetch
+          git checkout $GITHUB_REF_NAME
+          git pull
+          cd organization
+          sudo rm -rf node_modules
+          sudo docker exec -it -w /app $CONTAINER_NAME npm install --legacy-peer-deps
+          cd ..
+          sudo docker compose -p sandbox restart

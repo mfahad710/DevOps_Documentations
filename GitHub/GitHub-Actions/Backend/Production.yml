@@ -1,0 +1,28 @@
+name: Deploy Branch to Production Azure App Service through ACR
+run-name: ${{ github.actor }}
+on: workflow_dispatch
+
+jobs:
+  production:
+   runs-on: ubuntu-latest
+   environment: production
+   steps:
+    - name: Checkout branch
+      uses: actions/checkout@v3
+
+    - name: Build, Push and Deploy
+      run: |
+        echo ${{ vars.ACR_PASSWORD }} | docker login ${{ vars.ACR_NAMESPACE }} --username "${{ vars.ACR_USERNAME }}" --password-stdin
+        IMAGE_NAME=fort_prod_backend
+        docker build . --file Prod.Dockerfile --tag ${IMAGE_NAME}
+        VERSION="$GITHUB_RUN_ID"
+        IMAGE=${{ vars.ACR_NAMESPACE }}/${IMAGE_NAME}
+        docker tag "${IMAGE_NAME}" "${IMAGE}:${VERSION}"
+        docker push "${IMAGE}:${VERSION}"
+        docker tag "${IMAGE_NAME}" "${IMAGE}:latest"
+        docker push "${IMAGE}:latest"
+
+    - name: Trigger Sandbox Pipeline 
+      run: |
+        echo "Trigger Sandbox Pipeline"
+        curl -L -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GH_API_TOKEN }}" ${{ vars.GH_BACKEND_URL }}/actions/workflows/sandbox.yml/dispatches -d '{"ref":"prod"}'
