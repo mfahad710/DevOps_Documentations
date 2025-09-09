@@ -192,7 +192,7 @@ pipelines:
                   sudo rm -rf node_modules
                   sudo docker exec -it -w /app $CONTAINER_NAME npm i -f
                   cd ..
-                  sudo docker-compose restart
+                  sudo docker compose -p sandbox restart
 
     stage:
       - step:
