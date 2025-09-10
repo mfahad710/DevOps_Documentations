@@ -20,6 +20,7 @@ use admin
 ```
 
 ### Step 3: Create a User
+
 ```javascript
 db.createUser({
   user: "fortadmin",
@@ -29,6 +30,23 @@ db.createUser({
 ```
 
 > This user will have **root access** and can perform any action across all databases.
+
+**Create Admin user with multiple roles**
+
+```javascript
+db.createUser({
+  user: "fortAdmin",
+  pwd: "password123",
+  roles: [
+  { role: "dbAdmin", db: "admin" },
+  { role: "dbOwner", db: "admin" },
+  { role: "clusterAdmin", db: "admin" },
+  { role: "dbAdminAnyDatabase", db: 'admin' },
+  { role: "userAdminAnyDatabase", db: 'admin' },
+  { role: "readWriteAnyDatabase", db: 'admin' }
+  ]
+})
+```
 
 - **user**: The username of the MongoDB user.
 - **pwd**: The password for the user.
@@ -70,3 +88,14 @@ List all roles in the current database:
 ```javascript
 show roles
 ```
+
+## Grant Role to User
+
+If a user already has roles and you just want to add more (instead of replacing all roles), `grantRolesToUser` is the safer and cleaner method.
+
+```javascript
+db.grantRolesToUser("<username>", [
+  { role: "roleName", db: "databaseName" }
+])
+```
+
