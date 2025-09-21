@@ -43,13 +43,13 @@ To connect your Cloud Run service to your Redis instance via a Serverless VPC Ac
    - Under **Traffic Routing**, select:
      - **Route only requests to private IPs to the VPC**
 
-![Alt text](../Images/GoogleCloud/GCP-Redis-CloudRun1.PNG)
+![Connection-Details](../Images/GoogleCloud/GCP-Redis-CloudRun1.PNG)
 
 ### Add Environment Variables
 - Update environment variables in your Cloud Run service container configuration according to the Redis instance details.
 - Retrieve the **Redis port** and **Redis password** from the Redis service.
 
-![Alt text](../Images/GoogleCloud/GCP-Redis-CloudRun2.PNG)
+![Redis-Details](../Images/GoogleCloud/GCP-Redis-CloudRun2.PNG)
 
 ## Connectivity Test
 From within the Cloud Run logs or your app, ensure the following:
