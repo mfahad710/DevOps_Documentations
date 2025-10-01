@@ -1,0 +1,36 @@
+workflow:
+  name: "Stress Testing Using JMeter ( JMX ) File Pipeline"
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'stress-testing'
+      when: always
+
+stages:
+  - stress-test
+
+#--------------- Stress Testing using JMeter ( JMX ) File ----------------#
+jmeter_stress_test:
+  stage: stress-test
+  image:
+    name: justb4/jmeter:5.5
+    # entrypoint is overridden to avoid issues with the default entrypoint of the Docker image
+    entrypoint: [""]
+  tags:
+    - Stress_Test_Docker_Runner
+  timeout: 9h
+  variables:
+    RUNNER_SCRIPT_TIMEOUT: 9h
+  script:
+    - |
+      echo "Starting Stress Testing with JMeter ( JMX ) File..."
+      jmeter -n -t JMX_Files/TransactionAPIsStressTesting.jmx -l JMX_Files/results-report.jtl -j JMX_Files/stress-test.log
+      jmeter -g JMX_Files/results-report.jtl -o JMX_Files/html-report
+  artifacts:
+    when: always
+    paths:
+      - JMX_Files/results-report.jtl
+      - JMX_Files/stress-test.log
+      - JMX_Files/html-report
+  # Manual trigger for the job
+  rules:
+    - when: manual
+  allow_failure: true
