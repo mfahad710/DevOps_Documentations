@@ -541,3 +541,119 @@ sudo systemctl enable promtail
 sudo systemctl start promtail
 sudo systemctl status promtail
 ```
+
+## Alertmanager
+
+Alertmanager is part of the Prometheus stack. It handles alerts, routes them to email/Slack, and manages deduplication and silencing.
+
+Create Alertmanager User
+
+```bash
+sudo useradd --no-create-home --shell /bin/false alertmanager
+```
+
+Download Alertmanager Binary
+
+```bash
+cd /opt
+sudo wget https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
+sudo tar -xvf alertmanager-0.27.0.linux-amd64.tar.gz
+sudo mv alertmanager-0.27.0.linux-amd64 alertmanager
+```
+
+Move Binaries
+
+```bash
+sudo cp /opt/alertmanager/alertmanager /usr/local/bin/
+sudo cp /opt/alertmanager/amtool /usr/local/bin/
+sudo chown alertmanager:alertmanager /usr/local/bin/alertmanager /usr/local/bin/amtool
+```
+
+Create Configuration Directory
+
+```bash
+sudo mkdir /etc/alertmanager
+sudo mkdir /var/lib/alertmanager
+sudo chown -R alertmanager:alertmanager /etc/alertmanager /var/lib/alertmanager
+```
+
+Create Configuration File
+
+```bash
+sudo nano /etc/alertmanager/alertmanager.yml
+```
+
+Config File:
+
+```yaml
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'email-alert'
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: 'alerts@yourdomain.com'
+        from: 'alertmanager@yourdomain.com'
+        smarthost: 'smtp.yourdomain.com:587'
+        auth_username: 'alertmanager@yourdomain.com'
+        auth_password: 'yourpassword'
+```
+
+Create Systemd Service
+
+```bash
+sudo nano /etc/systemd/system/alertmanager.service
+```
+
+Content:
+```ini
+[Unit]
+Description=Prometheus Alertmanager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=alertmanager
+Group=alertmanager
+Type=simple
+ExecStart=/usr/local/bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/var/lib/alertmanager
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload and Start Service
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable alertmanager
+sudo systemctl start alertmanager
+sudo systemctl status alertmanager
+```
+
+Access through Browser
+
+```bash
+http://<your-server-ip>:9093
+```
+
+Integrate with Prometheus
+
+Add in `/etc/prometheus/prometheus.yml`:
+
+```yaml
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "localhost:9093"
+```
+
+Then restart Prometheus:
+```bash
+sudo systemctl restart prometheus
+```
