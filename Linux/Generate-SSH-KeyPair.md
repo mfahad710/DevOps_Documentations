@@ -5,7 +5,6 @@
 In cryptography, a key pair consists of
 
 - **Private key** → kept secret, used for authentication/signing.
-
 - **Public key** → shared openly, used for verification/encryption.
 
 SSH (**Secure Shell**) commonly uses public-key cryptography for secure access to servers. Two popular algorithms are
@@ -79,12 +78,28 @@ To use the public key for SSH login, copy it to the server:
 ssh-copy-id username@<Server-IP>
 ```
 
-
 This command adds your public key to the server’s `~/.ssh/authorized_keys`, enabling passwordless login.
 
-## Best Practice
+## Permission
+Change the Keys permission
 
-**Permissions:** Ensure private keys are `chmod 600`.
+#### Windows
+In Windows change the Key permission
+
+CMD / Powershell Command
+```bash
+icacls <key_file> /inheritance:r /grant:r <Username>:(F)
+```
+```bash
+icacls test.pem /inheritance:r /grant:r Fahad:(F)
+```
+
+#### Linux
+```bash
+sudo chmod 600 <key_file>
+``` 
+
+## Best Practice
 
 **Public key usage:** Add `id_rsa.pub` or `id_ed25519.pub` to the remote server’s `~/.ssh/authorized_keys`.
 
