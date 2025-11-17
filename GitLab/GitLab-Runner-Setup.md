@@ -1,5 +1,13 @@
 # GitLab Runner Setup on Linux Server
 
+**Runners** are the agents that run our jobs. These agents can run on physical machines or virtual instances. In our `.gitlab-ci.yml` file, we can specify a container image we want to use when running the job. The runner loads the image, clones our project, and runs the job either locally or in the container.
+
+If we use `GitLab.com`, runners on Linux, Windows, and macOS are already available for use. If needed, we can also register our own runners.
+
+If we don’t use  `GitLab.com`, we can:
+- Register runners or use runners already registered for our GitLab Self-Managed instance.
+- Create a runner on our local machine.
+
 This guide explains how to install and configure GitLab Runner on a Linux server.
 
 ## Prerequisites
