@@ -89,4 +89,4 @@ How mTLS Works, in mTLS
 - Server verifies the client's certificate
 - Encrypted connection established with both parties authenticated
 
-![mTLS-Handshake](./mTLS-Handshake.png)
+![mTLS-Handshake](../../Images/Security/SSL/mTLS-Handshake.png)
