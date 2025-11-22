@@ -8,7 +8,7 @@ The Secure Socket Layer (SSL) is a cryptographic protocol designed to provide se
 
 The Transport Layer Security (TLS) is the successor to SSL and is designed to provide **improved security** and efficiency. TLS was developed as an enhancement of SSL to the address various vulnerabilities and to the incorporate modern cryptographic techniques. The first version, **TLS 1.0** was based on **SSL 3.0** but included significant improvements. TLS continues to evolve with the newer versions offering enhanced the security features.
 
-## Difference Between Secure Socket Layer (SSL) and Transport Layer Security (TLS)
+## Difference Between SSL and TLS
 
 Both **SSL** and **TLS** are the protocols used to provide security between **web browsers** and **web servers**. The main difference between SSL and TLS is that, in SSL, the Message digest is used to create a master secret and it provides the basic security services which are Authentication and confidentiality. While in TLS, a Pseudo-random function is used to create a master secret.
 
@@ -16,7 +16,7 @@ Both **SSL** and **TLS** are the protocols used to provide security between **we
 The handshake protocol is basically used between a web client and web server to establish trust and then negotiate what secret key should be used to encrypt and decrypt the conversation.  
 TLS handshakes are a series of **datagrams**, or **messages**, exchanged by a client and a server. A TLS handshake involves multiple steps, as the client and server exchange the information necessary for completing the handshake and making further conversation possible.  
 
-![SSL_TLS_Handshake](../../Images/Security/SSL/SSL_TLS_Handshake.png)
+![SSL_TLS_Handshake](./SSL_TLS_Handshake.png)
 
 #### Steps
 
@@ -44,26 +44,12 @@ TLS handshakes are a series of **datagrams**, or **messages**, exchanged by a cl
 ## Difference between Self-Signed vs. Paid Certificates
 
 ### Paid SSL
-Here's how to request a paid SSL/TLS certificate from a well-known Certificate Authority (CA) like **Verisign** or **Comodo**:
+To request a paid SSL/TLS certificate from a well-known Certificate Authority (CA) like **Verisign** , **DigiCert** ,  **Sectigo** , **GlobalSign** , **Entrust** , **RapidSSL**
 
-- Create a Certificate Signing Request (CSR) with a private key. The CSR includes details about your location, organization, and FQDN (Fully Qualified Domain Name).
-- Send the CSR to the trusted CA.
-- The CA will send you the SSL certificate, signed by their root certificate authority, along with a private key.
+- Create a **Certificate Signing Request (CSR)** with a private key. The CSR includes details about your location, organization, and FQDN (Fully Qualified Domain Name).
+- Send the CSR to the **trusted CA**.
+- The CA will send you the **SSL certificate**, signed by their root certificate authority, along with a private key.
 - Validate and use this SSL certificate with your applications.
-
-Most browsers and operating systems store root CA certificates from all the trusted CAs. You can view them from the browser settings.
-
-That is why browsers don’t show security messages when visiting websites using SSL from a trusted and well-known commercial CA.
-
-Each browser has its own set of criteria and processes for accepting and trusting CAs.
-
-**So, who decides if a CA can be trusted?** 
-
-Well, they are vetted by independent audit organizations like webtrust. 
-
-The results of these audits are crucial for a CA to be trusted by web browsers and operating systems.
-
-For public endpoints, organizations always use paid certificates from well-known CAs.
 
 ### Self-Signed SSL
 For a self-signed certificate
@@ -77,7 +63,30 @@ To learn these practically: [Reference Link](https://devopscube.com/create-self-
 
 Typically, organizations manage their own PKI infrastructure for internal TLS certificate requests.   
 
-![Self-Signed-Certificate](../Images/Security/Self-Signed-Certificate.png)
+![Self-Signed-Certificate](../../Images/Security/Self_Signed_Certificate.png)
 
 
 ## Mutual Transport Layer Security ( mTLS )
+
+mTLS is a security protocol where both the client and server **authenticate** each other before establishing a connection (Meaning both share their Certificate to authenticate each other), as opposed to standard TLS where only the server proves its identity to the client.
+
+How Standard TLS Works, in regular TLS
+
+- Client connects to server
+- Server presents its certificate
+- Client verifies the server's certificate
+- Encrypted connection established
+
+> The client trusts the server, but the server doesn't verify who the client is.
+
+How mTLS Works, in mTLS
+
+- Client connects to server
+- Server presents its certificate
+- Client verifies the server's certificate
+- Server requests the client's certificate
+- Client presents its certificate
+- Server verifies the client's certificate
+- Encrypted connection established with both parties authenticated
+
+![mTLS-Handshake](./mTLS-Handshake.png)
