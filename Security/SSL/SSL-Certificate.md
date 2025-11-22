@@ -16,7 +16,7 @@ Both **SSL** and **TLS** are the protocols used to provide security between **we
 The handshake protocol is basically used between a web client and web server to establish trust and then negotiate what secret key should be used to encrypt and decrypt the conversation.  
 TLS handshakes are a series of **datagrams**, or **messages**, exchanged by a client and a server. A TLS handshake involves multiple steps, as the client and server exchange the information necessary for completing the handshake and making further conversation possible.  
 
-![SSL_TLS_Handshake](./SSL_TLS_Handshake.png)
+![SSL_TLS_Handshake](../../Images/Security/SSL/SSL_TLS_Handshake.png)
 
 #### Steps
 
