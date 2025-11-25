@@ -106,7 +106,7 @@ Run the following command to retrieve the database and password:
 cat bitnami_credentials
 ```
 
-![]()
+![db_Credentials](../Images/AWS/Wordpress_ligthsail_14.png)
 
 The password is use for both purpose,
 
@@ -121,11 +121,11 @@ Open the WordPress configuration file (wp-config.php) for editing:
 sudo nano /opt/bitnami/wordpress/wp-config.php
 ```
 
-![]()
+![db_credentials](../Images/AWS/Wordpress_Ligthsail_15.png)
 
 #### Connect to the Database
 
 Enter the password
 `33a70ccef159c91deed51d59e5462c69177dc617657948ed8f5a32a5a8a2ce99`
 
-![]()
+![db_credentials](../Images/AWS/Wordpress_Ligthsail_16.png)
