@@ -104,3 +104,113 @@ sudo chmod 600 <key_file>
 **Public key usage:** Add `id_rsa.pub` or `id_ed25519.pub` to the remote server’s `~/.ssh/authorized_keys`.
 
 **Recommendation:** Use Ed25519 unless you must support very old systems.
+
+## 🔒 SSH Key Passphrase
+An SSH key passphrase is an additional layer of security applied to the **private SSH key**. It protects the private key from unauthorized use in case the key file is compromised.
+
+#### Benefits
+- Protects private key if stolen
+- Adds security for laptops and personal systems
+- Recommended for production and critical access
+
+#### Drawbacks
+- Requires entering passphrase (unless cached)
+- Slight inconvenience for automation
+
+In simple terms:
+- **Private Key** → Your identity
+- **Passphrase** → Password protecting that identity  
+
+> **Note:** Passphrase is applied only to the **private key**, never to the `.pub` file.  
+
+#### Check If an SSH Key Has a Passphrase
+```bash
+ssh-keygen -y -f <KEY_PATH>
+ssh-keygen -y -f ~/.ssh/id_rsa
+```
+
+- If prompted for passphrase → key **has a passphrase**
+- If public key is printed immediately → key **has no passphrase**
+
+### Change SSH Key Passphrase
+
+To change the passphrase of an existing key:
+
+```bash
+ssh-keygen -p -f ~/.ssh/id_rsa
+```
+
+### Remove Passphrase From SSH Key
+
+To remove the passphrase (make key passwordless):
+
+```bash
+ssh-keygen -p -f ~/.ssh/id_rsa
+```
+
+When prompted for new passphrase:
+
+```text
+Enter new passphrase (empty for no passphrase):
+```
+
+Press **ENTER** without typing anything.
+
+### Add Passphrase to an Existing Key
+
+To add a passphrase to a key that currently has none:
+
+```bash
+ssh-keygen -p -f ~/.ssh/id_rsa
+```
+
+- Old passphrase → Press ENTER
+- New passphrase → Enter desired passphrase
+
+### Using `ssh-agent` to Cache Passphrase
+
+`ssh-agent` allows you to enter the passphrase **once per session**.
+
+#### Start ssh-agent
+
+```bash
+eval "$(ssh-agent -s)"
+```
+
+#### Add SSH Key
+
+```bash
+ssh-add ~/.ssh/id_rsa
+```
+
+#### List Loaded Keys
+
+```bash
+ssh-add -l
+```
+
+> Passphrase is cached **in memory**, Cache is lost after logout or reboot
+
+### SSH-Agent Alias
+Create Alias for permenant `ssh-agent`
+
+```bash
+alias ssha='eval $(ssh-agent) && ssh-add'
+```
+
+Add this alias in the `.bashrc` file
+
+Then use alias `ssha`, which activate the `ssh-agent` session
+
+```bash
+ssha
+```
+
+## Security Recommendations
+
+| Scenario | Passphrase | ssh-agent |
+|--------|------------|-----------|
+Personal Laptop | Yes | Yes |
+Production Server | Yes | Yes |
+CI/CD Pipeline | No | No |
+Isolated Automation | Optional | Optional |
