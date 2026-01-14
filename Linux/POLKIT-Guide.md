@@ -59,7 +59,9 @@ Should show **Active (running)**.
 
 ## Step 3 – Create a Rule for GitLab Deploy User
 
-For RHEL 7.x, use the `.pkla` format.
+#### For RHEL 7.x
+
+use the `.pkla` format.
 
 Create file:
 ```
@@ -86,6 +88,42 @@ Restart Polkit:
 ```bash
 sudo systemctl restart polkit
 ```
+
+
+#### For RHEL 8 
+use the `.rules` format
+
+Create file:
+```
+cd /etc/polkit-1/rules.d
+touch 50-ps-gitlab-systemctl.rules
+```
+
+Add the following rule in file
+```bash
+// Allow ps-gitlab to manage systemd units without password
+const allowed_users = ["ps-gitlab"];
+
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units") {
+        if (allowed_users.indexOf(subject.user) >= 0) {
+            return polkit.Result.YES;
+        }
+    }
+});
+```
+
+Set Permissions
+```bash
+sudo chown root:root /etc/polkit-1/rules.d/50-ps-gitlab-systemctl.rules
+sudo chmod 644 /etc/polkit-1/rules.d/50-ps-gitlab-systemctl.rules
+```
+
+Restart Polkit:
+```bash
+sudo systemctl restart polkit
+```
+
 
 ## Step 4 – Test the Rule
 
