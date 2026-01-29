@@ -18,7 +18,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/opt/myapp
-ExecStart=/usr/bin/java -jar /opt/myapp/myapp.jar
+ExecStart=/usr/bin/java -jar myapp.jar
 
 Restart=always
 RestartSec=10
