@@ -1,0 +1,23 @@
+---
+- name: Basic Ubuntu Setup Playbook
+  hosts: localhost
+  become: true  # Ensure elevated privileges for tasks that require it
+
+  tasks:
+    - name: Display current date and time
+      debug:
+        msg: "{{ ansible_date_time.iso8601 }}"
+
+    - name: Run script from host directory (assuming correct permissions)
+      script: /home/ansible/test_script.sh
+
+    - name: Install Nginx web server
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start and enable Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes  # Ensure Nginx starts automatically on boot
