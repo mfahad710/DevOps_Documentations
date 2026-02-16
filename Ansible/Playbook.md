@@ -62,3 +62,36 @@ To run Ansible playbook
 ansible-playbook <playbook-filename>
 ansible-playbook playbook.yml
 ```
+
+### Verify Playbook
+
+#### Check Mode
+Ansible’s check mode is a **dry-run** feature that simulates the execution of playbook without making any changes to the hosts. It clearly shows what changes would be made if the playbook were executed in a live environment. To run a playbook in check mode, simply add the `--check` option.
+
+```bash
+ansible-playbook install_nginx.yml --check
+```
+
+#### Diff Mode
+Diff mode provides a **before-and-after** comparison by showing the differences between the current system state and the state after applying the playbook. This feature is especially useful when we need to understand precisely what changes will be made. To enable diff mode, include the `--diff` option when running playbook
+
+```bash
+ansible-playbook configure_nginx.yml --check --diff
+```
+
+#### Syntax Check Mode
+Before executing any playbook, it’s essential to ensure that YAML syntax is correct. Ansible offers a syntax check mode which quickly validates playbook, catching potential syntax errors early. Use the `--syntax-check` option to perform this verification
+
+```bash
+ansible-playbook configure_nginx.yml --syntax-check
+```
+
+### Ansible lint
+
+Ansible Lint is a command-line tool designed for linting playbooks, roles, and collections. It meticulously scans Ansible code for potential errors, bugs, stylistic issues, and suspicious constructs.
+
+**Command**
+
+```bash
+ansible-lint style_example.yml
+```
