@@ -4,7 +4,7 @@ An Ansible inventory is a collection of managed hosts we want to manage with Ans
 
 By default, the inventory is stored in `/etc/ansible/hosts`, but we can specify a different location with the `-i` flag or the `ansible.cfg` configuration file.
 
-### Ansible inventory basics
+## Ansible inventory basics
 The most common formats are either **INI** or **YAML**
 
 ### INI Format
@@ -63,4 +63,48 @@ all:
       hosts:
         db1.example.com:
         db2.example.com:
+```
+
+
+### Grouping and Parent Child Relationships
+Ansible’s grouping functionality comes to the rescue when managing multiple servers simultaneously. We can define groups that represent collections of servers sharing similar roles. Once a group is defined, targeting that group for updates or configuration changes applies those changes to all associated servers.
+
+- Define a parent group (**Web Servers**) to hold common configurations.
+- Create child groups (**Web Servers US** and **Web Servers EU**) for location-specific settings.
+
+**INI Format**  
+
+```bash
+[webservers:children]
+webservers_us
+webservers_eu
+
+[webservers_us]
+server1_us.com ansible_host=192.168.8.101
+server2_us.com ansible_host=192.168.8.102
+
+[webservers_eu]
+server1_eu.com ansible_host=10.12.0.101
+server2_eu.com ansible_host=10.12.0.102
+```
+
+**YAML Format**  
+
+```bash
+all:
+  children:
+    webservers:
+      children:
+        webservers_us:
+          hosts:
+            server1_us.com:
+              ansible_host: 192.168.8.101
+            server2_us.com:
+              ansible_host: 192.168.8.102
+        webservers_eu:
+          hosts:
+            server1_eu.com:
+              ansible_host: 10.12.0.101
+            server2_eu.com:
+              ansible_host: 10.12.0.102
 ```
