@@ -126,6 +126,32 @@ Include available plugins to create a more complete Ansible configuration as fol
 ansible-config init --disabled -t all > ansible.cfg
 ```
 
+To see all available configuration options and their corresponding environment variables, use the `ansible-config` command:
+
+List all configuration options with their default values:
+```bash
+ansible-config list  # Lists all configurations
+```
+
+View the currently active configuration file:
+```bash
+ansible-config view  # Displays the current configuration file
+```
+
+Dump the full configuration (with sources):
+```bash
+ansible-config dump  # Shows current settings and their origins
+```
+
+Consider the following example that sets fact gathering to explicit and verifies the change:
+```bash
+export ANSIBLE_GATHERING=explicit
+ansible-config dump | grep GATHERING
+DEFAULT_GATHERING: explicit
+```
+
+This confirms that Ansible has overridden the configuration using the environment variable. Such commands are invaluable when troubleshooting configuration issues.
+
 #### Inventory File
 
 Then create the inventory file if it doesn’t exist:
