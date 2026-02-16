@@ -10,6 +10,57 @@ Ansible connects to each target machine and automatically gathers essential deta
 
 This comprehensive data collection is managed by the **setup** module, which is executed automatically at the beginning of every playbook unless **explicitly** disabled.
 
+## Commands
+To get facts of all servers
+```bash
+ansible all -m setup
+```
+
+To get python version in all servers
+```bash
+ansible all -m setup | grep ansible_python_version
+OR
+ansible all -m setup -a "filter="ansible_python_version""
+```
+
+To get python version of ansible controller server
+```bash
+ansible localhost -m setup | grep ansible_python_version
+OR
+ansible localhost -m setup -a "filter="ansible_python_version""
+```
+
+## Custom Facts
+We can create custom fact in the `/etc/ansible`
+```bash
+mkdir facts.d
+```
+
+All the custom facts are in the `/etc/ansible/facts.d/` with `.fact` extension
+```bash
+sshd.fact
+httpd.fact
+```
+This files contains scripts to run in any scripting language i.e **Bash**, **Python**
+
+
+Create `sshd.fact` file in `/etc/ansible/facts.d/` directory
+```bash
+#!/bin/bash
+status=$(systemctl is-active sshd)
+if[[$status="active"]]; then
+state="sshd is active"
+else
+state="sshd is inactive"
+fi
+echo "{\"sshd_status\:\"$state\"}"
+```
+
+To run custom fact in ansible server
+```bash
+ansible localhost -m setup -a "filter=ansible_local"
+```
+
 ### Simple Playbook Example
 Consider the following playbook that prints a simple hello message. Even though only the debug task is specified in the playbook, Ansible first gathers facts from each host:
 
