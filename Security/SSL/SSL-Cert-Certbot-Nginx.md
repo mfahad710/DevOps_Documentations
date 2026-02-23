@@ -80,7 +80,7 @@ Save the file.
 create soft link of the file by,
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/api.fortrans.com /etc/nginx/sites-enable
+sudo ln -s /etc/nginx/sites-available/api.fortrans.com /etc/nginx/sites-enabled
 ```
 
 then test config:
