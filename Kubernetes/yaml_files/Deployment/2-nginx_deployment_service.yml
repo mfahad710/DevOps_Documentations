@@ -1,0 +1,71 @@
+---
+# Deployment for Nginx
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+
+---
+# Service for Nginx
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30011
+
+## Command to run this file
+# kubectl apply -f 2-nginx_deployment_service.yml
+
+## Check Deployment Status
+# kubectl get deployments nginx-deployment
+# OR
+# kubectl get deployments -l app=nginx
+
+## Check Service Status
+# kubectl get services nginx-service
+# OR
+# kubectl get services -l app=nginx
+
+## We can edit the deployment using the following command:
+# kubectl edit deployment nginx-deployment
+
+## We can edit the service using the following command:
+# kubectl edit service nginx-service
+
+## If we are on a Local Machine (Minikube)
+# minikube service nginx-service --url
+
+## Find Node IP Address
+# kubectl get nodes -o wide
+
+## Access via Browser or Curl:
+# Open browser and type: http://<NODE-IP>:3001
+
+## Cleanup
+# kubectl delete -f 2-nginx_deployment_service.yml

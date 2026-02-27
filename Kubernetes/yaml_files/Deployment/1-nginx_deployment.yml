@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx_app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx_app
+  template:
+    metadata:
+      labels:
+        app: nginx_app
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+
+## Command to run this file
+# kubectl apply -f 1-nginx_deployment.yml
+
+## Check Deployment Status
+# kubectl get deployments -l app=nginx_app
+
+## After applying the deployment, We can check the status of the pods using the following command:
+# kubectl get pods -l app=nginx_app
+
+## Alternative Imperative command of this file
+# kubectl create deployment nginx --image=nginx:latest --replicas=3 --port=80
+
+## This imperative command create deployment with named "nginx" and container with named "nginx" also the labels is "app=nginx". That's why we recommend using the declaration file instead of imperative command.
+## We can edit the deployment using the following command:
+# kubectl edit deployment nginx
+
+## Change Container Image
+# kubectl set image deployment nginx nginx-container=nginx:1.17
+
+## Watch pods
+# watch kubectl get pods -l app=nginx_app
+
+## Check deployment status
+# kubectl rollout status deployment nginx
+
+## check the deployment file
+# kubectl get deployment nginx -o yaml
+
+## Check deployment history
+# kubectl rollout history deployment nginx -l app=nginx_app
+
+## Roll Back to old version if needed
+# kubectl rollout undo deployment nginx -l app=nginx_app
