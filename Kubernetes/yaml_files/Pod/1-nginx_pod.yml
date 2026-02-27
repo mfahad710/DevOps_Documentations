@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx_app
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+
+## Command to run this file
+# kubectl apply -f 1-nginx_pod.yml
+
+## After running the pod, we can access the nginx server by running the following command:
+# kubectl port-forward pod/nginx-pod 8080:80
+
+## Alternative Imperative command of this file
+# kubectl run nginx-pod --image=nginx:latest --labels="app=nginx_app"
+
+## This imperative command create pod with named "nginx-pod" and container with named "nginx-pod". That's why we recommend using the declaration file instead of imperative command.
+## We can edit the pod using the following command:
+# kubectl edit pod nginx-pod

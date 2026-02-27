@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shared-volume-pod
+  labels:
+    app: shared-volume-pod
+spec:
+  containers:
+    - name: shared-volume-container-1
+      image: debian:latest
+      command: ["bash", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /tmp/k8s/con-1
+
+    - name: shared-volume-container-2
+      image: debian:latest
+      command: ["bash", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /tmp/k8s/con-2
+
+  volumes:
+    - name: shared-volume
+      emptyDir: {}
+
+## Command to run this file
+# kubectl apply -f 3-shared_volume.yml
+
+## Check Pod Status
+# kubectl get pods -l app=shared-volume-pod
+
+## We can edit the pod using the following command:
+# kubectl edit pod shared-volume-pod
+
+## Exec into the first container and create the file
+# kubectl exec -it shared-volume-pod --container shared-volume-container-1 -- bash
+
+# echo "This is shared text file" > /tmp/k8s/con-1/file.txt
+# exit
+
+## Exec into the second container and read the file
+# kubectl exec -it shared-volume-pod --container shared-volume-container-2 -- bash
+
+# cat /tmp/k8s/con-2/file.txt
+# exit
+
+## In a Kubernetes context, the sleep command is primarily used to keep a "base image" container (like Debian or Ubuntu) active and running for a specific duration, so that it doesn't immediately exit and enter a crash loop.

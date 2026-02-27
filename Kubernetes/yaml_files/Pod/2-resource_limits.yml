@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx_app
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi" # 128 megabytes
+          cpu: "500m" # 500 millicores = 0.5 CPU cores
+      ports:
+        - containerPort: 80
+
+## If we don't define a resources, Kubernetes follows a "Wild West" policy by default.
+## The Default: No Limits
+
+## By default, Kubernetes assigns zero requests and no limits to a container. This means:
+## - Requests (0): The Pod is treated as having a priority of "zero" during scheduling. It can be placed on any node that has even a tiny sliver of space.
+## - Limits (Unbounded): The container can consume all the CPU and Memory available on the entire Node. If your Nginx container has a memory leak, it will keep growing until the entire server runs out of RAM and starts crashing other, more important Pods.
+
+## The Quality of Service (QoS) Impact
+## When we leave limits and requests undefined, Kubernetes classifies our Pod as BestEffort.
+## The Risk: BestEffort pods are the "first to be fired." If the Node runs low on resources, Kubernetes will kill these pods first to save the pods that actually have defined requests and limits.
+
+## Resource Requests and Limits
+## For CPU, the container is guaranteed a minimum of 250 millicores (one-quarter of a core) to ensure it runs smoothly,
+## but it is allowed to "burst" up to a maximum hard limit of 500 millicores (half of a core) if the server has spare capacity; once it hits that 500m ceiling,
+## Kubernetes will throttle its speed to prevent it from using more.
+
+## For Memory, the container is allocated an initial 64 Megabytes of RAM to start up, with the flexibility to grow its usage as needed up to a strict limit of 128 Megabytes;
+## however, if the container attempts to exceed that 128Mi limit,
+## Kubernetes will immediately terminate (OOMKill) and restart the container to protect the node's stability.
+
+## The "Guaranteed" Class
+## If we set our Requests exactly equal to our Limits, Kubernetes gives that Pod a "Guaranteed" Quality of Service (QoS).
+## These pods are the very last to be evicted if the node runs out of resources.
+
+## Command to run this file
+# kubectl apply -f 2-resource_limits.yml
+
+## After running the pod, we can access the nginx server by running the following command:
+# kubectl port-forward pod/nginx-pod 8080:80
+
+## Alternative Imperative command of this file
+# kubectl run nginx-pod --image=nginx:latest --labels="app=nginx_app" --request-memory=64Mi --request-cpu=250m --limit-memory=128Mi --limit-cpu=500m
+
+## This imperative command create pod with named "nginx-pod" and container with named "nginx-pod". That's why we recommend using the declaration file instead of imperative command.
+## We can edit the pod using the following command:
+# kubectl edit pod nginx-pod

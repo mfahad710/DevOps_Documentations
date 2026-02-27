@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: print-envars-greeting
+spec:
+  containers:
+    - name: print-env-container
+      image: bash
+      command: ["/bin/sh", "-c", 'echo "$(GREETING) $(COMPANY) $(GROUP)"']
+      env:
+        - name: GREETING
+          value: "Welcome to"
+        - name: COMPANY
+          value: "DevOps"
+        - name: GROUP
+          value: "Group"
+      restartPolicy: Never
+
+## Command to run this file
+# kubectl apply -f 5-print-env.yml
+
+## Check the pod status
+# kubectl get pods
+
+## Check the pod logs
+# kubectl logs -f print-envars-greeting
+
+## Clean up
+# kubectl delete pod print-envars-greeting

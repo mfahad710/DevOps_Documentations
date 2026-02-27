@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+  labels:
+    app: webserver
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+
+    - name: sidecar-container
+      image: ubuntu:latest
+      command:
+        [
+          "sh",
+          "-c",
+          "while true; do cat /var/log/nginx/access.log /var/log/nginx/error.log; sleep 30; done",
+        ]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+
+## Command to run this file
+# kubectl apply -f 4-sidecar-container.yml
+
+## Check Pod Status
+# kubectl get pod webserver
+
+## We can edit the pod using the following command:
+# kubectl edit pod webserver
+
+## Check Pod Logs
+# kubectl logs -f webserver --container sidecar-container
+
+## This ensures:
+# nginx-container writes access/error logs to /var/log/nginx (shared volume).
+# sidecar-container reads them every 30 seconds
