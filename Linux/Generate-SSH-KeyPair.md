@@ -103,7 +103,41 @@ sudo chmod 600 <key_file>
 
 **Public key usage:** Add `id_rsa.pub` or `id_ed25519.pub` to the remote server’s `~/.ssh/authorized_keys`.
 
-**Recommendation:** Use Ed25519 unless you must support very old systems.
+**Recommendation:** Use Ed25519 unless we must support very old systems.
+
+## Create Key Pair in PEM Format
+
+To create a key pair in a PEM file format, we will use the command line tool OpenSSL to first generate a private key, and then extract the corresponding public key from it.
+
+#### Generate the private key
+Run the following command to generate an RSA private key with a recommended length of 2048 or 3072 bits, and save it as a PEM file.
+
+```bash
+openssl genrsa -out private_key.pem 2048
+```
+
+- `-out private_key.pem`: Specifies the filename for our private key.
+- `2048`: The number of bits for the key length. We can use 3072 or 4096 for enhanced security.
+
+#### Set permissions
+```bash
+chmod 400 private_key.pem
+```
+
+##### Extract the public key
+Use the private key file to generate the corresponding public key file in PEM format.
+
+```bash
+openssl rsa -in private_key.pem -pubout -out public_key.pem
+```
+
+- `-in private_key.pem`: Specifies the input private key file.
+- `-pubout`: This crucial flag tells OpenSSL to output the public key part.
+- `-out public_key.pem`: Specifies the filename for our public key. 
+
+We will now have two files  
+**private_key.pem**: Contains our private key  
+**public_key.pem**: Contains our public key
 
 ## 🔒 SSH Key Passphrase
 An SSH key passphrase is an additional layer of security applied to the **private SSH key**. It protects the private key from unauthorized use in case the key file is compromised.
