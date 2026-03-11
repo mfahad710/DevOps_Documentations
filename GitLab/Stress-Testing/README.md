@@ -73,11 +73,21 @@ jmeter -n -t JMX_Files/TransactionAPIsStressTesting.jmx -l JMX_Files/results-rep
 
 # Generate HTML report
 jmeter -g JMX_Files/results-report.jtl -o JMX_Files/html-report
+
+# Execute test with CSV file
+jmeter -n -t JMX_Files/TransactionAPIsStressTesting.jmx -l JMX_Files/results-report.jtl -j JMX_Files/stress-test.log -JcsvFile=JMX_Files/CardsList.csv
 ```
 
 **Docker Execution**:
 ```bash
+# Execute Test
 docker run --rm -v $(pwd):/mnt -w /mnt justb4/jmeter:5.5 -n -t JMX_Files/TransactionAPIsStressTesting.jmx -l JMX_Files/results-report.jtl -j JMX_Files/stress-test.log
+
+# Generate HTML report
+docker run -v $(pwd):/mnt -w /mnt justb4/jmeter:5.5 -g JMX_Files/results-report.jtl -o JMX_Files/html-report
+
+# Execute Test with CSV File
+docker run --rm -v $(pwd):/mnt -w /mnt justb4/jmeter:5.5 -n -t JMX_Files/TransactionAPIsStressTesting.jmx -l JMX_Files/results-report.jtl -j JMX_Files/stress-test.log -JcsvFile=JMX_Files/CardsList.csv
 ```
 
 ### GitLab CI Execution
