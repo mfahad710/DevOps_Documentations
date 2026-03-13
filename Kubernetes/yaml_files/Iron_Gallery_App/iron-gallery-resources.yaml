@@ -1,0 +1,158 @@
+---
+# Create a namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iron-gallery-namespace
+
+
+---
+# Create iron-gallery deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iron-gallery-deployment
+  namespace: iron-gallery-namespace
+  labels:
+    run: iron-gallery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: iron-gallery
+  template:
+    metadata:
+      labels:
+        run: iron-gallery
+    spec:
+      containers:
+      - name: iron-gallery-container
+        image: kodekloud/irongallery:2.0
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "50m"
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/nginx/html/data
+        - name: images
+          mountPath: /usr/share/nginx/html/uploads
+      volumes:
+      - name: config
+        emptyDir: {}
+      - name: images
+        emptyDir: {}
+
+
+---
+# Create iron-db deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iron-db-deployment
+  namespace: iron-gallery-namespace
+  labels:
+    db: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mariadb
+  template:
+    metadata:
+      labels:
+        db: mariadb
+    spec:
+      containers:
+      - name: iron-db-container
+        image: kodekloud/irondb:2.0
+        env:
+        - name: MYSQL_DATABASE
+          value: database_blog
+        - name: MYSQL_ROOT_PASSWORD
+          value: "S3cur3R00tP@ss"
+        - name: MYSQL_PASSWORD
+          value: "S3cur3Us3rP@ss"
+        - name: MYSQL_USER
+          value: iron_gallery_user
+        volumeMounts:
+        - name: db
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: db
+        emptyDir: {}
+
+
+---
+# Create iron-db service (ClusterIP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: iron-db-service
+  namespace: iron-gallery-namespace
+spec:
+  selector:
+    db: mariadb
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
+
+
+---
+# Create iron-gallery service (NodePort)
+apiVersion: v1
+kind: Service
+metadata:
+  name: iron-gallery-service
+  namespace: iron-gallery-namespace
+spec:
+  selector:
+    run: iron-gallery
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 32678
+  type: NodePort
+
+
+## This YAML file is a complete application stack (Frontend + Database) wrapped in its own isolated environment. It describes a Gallery Application that uses an Nginx-based frontend and a MariaDB backend.
+
+## Namespace -  The iron-gallery-namespace acts as a logical container. By placing all resources inside this namespace, we ensure they are isolated from other applications in our cluster, making it easier to manage and delete the entire project at once.
+
+## Database - (iron-db) 
+# Environment Variables: It sets up the database name (database_blog), the user, and the passwords.
+# Storage: It uses an emptyDir volume mounted at /var/lib/mysql.
+#         Note: Because it uses emptyDir, our database data will be deleted if the Pod is removed.
+
+# Database Service - iron-db-service - it's a ClusterIP. This means the database is private—it can only be reached by other pods inside the cluster, keeping it safe from the public internet.
+
+## Frontend - iron-gallery
+# Volumes: It uses two emptyDir volumes—one for configuration (/data) and one for uploaded images (/uploads).
+
+# Frontend Service - iron-gallery-service - It's a NodePort. It opens port 32678 on our physical nodes so we can access the gallery from our browser.
+
+## How the pieces connect
+# The Gallery frontend needs to talk to the Database.
+# Because they are in the same namespace, the Gallery container can simply use the hostname iron-db-service to connect to the database.
+# Kubernetes' internal DNS resolves iron-db-service to the private IP of the database service.
+
+## Command to apply the resources:
+# kubectl apply -f iron-gallery-resources.yaml
+
+## Check namespace:
+# kubectl get namespaces iron-gallery-namespace
+
+## Check deployments:
+# kubectl get deployments -n iron-gallery-namespace
+
+## Check services:
+# kubectl get services -n iron-gallery-namespace
+
+## The iron-gallery-service service should show NodePort type and its port should include 32678.
+## The iron-db-service service should show ClusterIP type and its port should be 3306.
+
+## Cleanup resources:
+# kubectl delete -f iron-gallery-resources.yaml
