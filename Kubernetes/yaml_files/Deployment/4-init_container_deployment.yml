@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-container-deployment
+  labels:
+    app: init-container-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: init-contain er-app
+  template:
+    metadata:
+      labels:
+        app: init-container-app
+    spec:
+      initContainers:
+        - name: init-container
+          image: ubuntu:latest
+          command: ['/bin/bash', '-c', 'echo Initializing... - This is init container test file > /tmp/init-container;']
+          volumeMounts:
+            - name: init-container-volume
+              mountPath: /tmp
+
+      containers:
+        - name: main-container
+          image: ubuntu:latest
+          command: ['/bin/bash', '-c', 'while true; do cat /tmp/init-container; sleep 5; done']
+          volumeMounts:
+            - name: init-container-volume
+              mountPath: /tmp
+          ports:
+            - containerPort: 80
+        
+      volumes:
+        - name: init-container-volume
+          emptyDir: {}
+
+## init Container Explanation
+# The initContainers block is a special section for containers that must run to completion before any regular containers can start.
+# It runs a bash command that creates a file named init-container inside the /tmp directory. It writes the text: "Initializing... - This is init container test file" into it.
+# Once the file is written, the Ubuntu container finishes its job and shuts down.
+
+## Main Container
+# It runs a loop that reads (cat) the file created by the init container every 5 seconds.
+# This container only starts once the Ubuntu init container has finished creating that file.
+
+
+## Shared Storage (emptyDir)
+# The most important part of this file is the Volume configuration. Without it, the two containers couldn't talk to each other.
+# volumes: Defines an emptyDir: {}. This is a temporary folder created on the host node when the Pod starts.
+# volumeMounts: Both containers mount this same volume at /tmp.
+# The Init Container writes the file to the shared volume.
+# The Main Container reads the file from that same shared volume.
+
+## Command to run this file
+# kubectl apply -f 4-init_container_deployment.yml
+
+## Check Deployment Status
+# kubectl get deployments init-container-deployment
+
+## After applying the deployment, We can check the status of the pods using the following command:
+# kubectl get pods -l app=init-container-app
+
+## Get the name of the pod created by the deployment using the following command:
+# POD_NAME=$(kubectl get pods -l app=init-container-app -o jsonpath='{.items[0].metadata.name}')
+
+## We can check the logs of the main container to see the output of the init container using the following command:
+# kubectl logs $POD_NAME -c main-container
+
+## The output should repeatedly show:
+# Initializing... - This is init container test file
+
+## clean up the deployment
+# kubectl delete deployment init-container-deployment
