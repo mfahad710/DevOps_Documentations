@@ -1,0 +1,80 @@
+---
+# ConfigMap for Redis configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+data:
+  redis-config: |
+    maxmemory 2mb
+
+---
+# Deployment for Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis-container
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        command: ["redis-server"]
+        args: ["/redis-master/redis-config"]
+        volumeMounts:
+        - name: redis-data
+          mountPath: /redis-master-data
+        - name: redis-config
+          mountPath: /redis-master
+      volumes:
+      - name: redis-data
+        emptyDir: {}
+      - name: redis-config
+        configMap:
+          name: redis-config
+          items:
+          - key: redis-config
+            path: redis-config
+
+
+## ConfigMap (Settings File) - The ConfigMap named redis-config stores a key called "redis-config". The value of this key is the actual text that would normally live in a .conf file on a server.
+
+## Volumes: How Storage is Defined - We defined two distinct types of volumes
+# redis-data (emptyDir): It creates an empty folder on the host node when the Pod starts. If the Pod is deleted, this data is wiped. It is used here for Redis to store its temporary database files.
+# redis-config (configMap): This volume type "maps" the ConfigMap we created into a virtual disk. The items block is specific: it takes the key redis-config from the ConfigMap and tells Kubernetes to present it as a file named redis-config inside the volume.
+
+## Volume Mounts: Where the Files "Land" - volumeMounts section inside the container spec tells Kubernetes where to "plug in" these volumes
+# /redis-master-data: The emptyDir is mounted here. Any data Redis writes to this folder is kept outside the container's file system but within the Pod's lifecycle.
+# /redis-master: The configMap volume is mounted here. Inside the container, a file will exist at /redis-master/redis-config. This file will contain the text maxmemory 2mb.
+
+## Connecting the Volume to the App (Command & Args)
+# Redis usually starts with default settings, but we are overriding that:
+# command: ["redis-server"]: Starts the Redis process.
+# args: ["/redis-master/redis-config"]: Tells Redis, "Don't use the default settings; instead, read the configuration file located at /redis-master/redis-config."
+
+## Command to apply the deployment
+# kubectl apply -f 5-redis_deployment.yml
+
+## To check the ConfigMap
+# kubectl get configmaps
+
+## To check the status of the deployment
+# kubectl get deployments redis-deployment
+
+## To check the logs of the Redis container
+# kubectl logs -l app=redis
+
+## Clean up the deployment and ConfigMap
+# kubectl delete -f 5-redis_deployment.yml
