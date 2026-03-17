@@ -1,0 +1,181 @@
+---
+# Persistent Volume for MySQL
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  labels:
+    app: mysql
+spec:
+  capacity:
+    storage: 250Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/mysql
+  persistentVolumeReclaimPolicy: Retain
+
+## Persistent Volume (PV) - defines exactly where and how much physical storage is available.
+# hostPath: path: /mnt/data/mysql: This is a Local Storage type. It tells Kubernetes to use a specific folder on the physical node's hard drive.
+# persistentVolumeReclaimPolicy: Retain: Means if we delete the Claim (PVC), the actual data on the disk is not deleted.
+
+
+---
+# Persistent Volume Claim for MySQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  labels:
+    app: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 250Mi
+
+## Persistent Volume Claim (PVC) - request created by the developer or the application
+# accessModes: ReadWriteOnce: This means the volume can be mounted as read-write by a single node at a time. This is perfect for a database like MySQL, which shouldn't have multiple instances writing to the same data files simultaneously.
+# requests: storage: 250Mi: The claim looks for a PV that has at least this much space available.
+
+
+---
+## Secrets for MySQL
+
+# 1. mysql-root-password secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-root-password
+  labels:
+    app: mysql
+type: Opaque
+stringData:
+  password: YUIidhb667
+
+---
+## Secrets for MySQL
+
+# 2. mysql-user-pass secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-user-pass
+  labels:
+    app: mysql
+type: Opaque
+stringData:
+  username: mysqluser
+  password: B4zNgHA7Ya
+
+---
+## Secrets for MySQL
+
+# 3. mysql-db-url secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-db-url
+  labels:
+    app: mysql
+type: Opaque
+stringData:
+  database: mydb
+
+## Secrets - Kubernetes Secrets are a way to store sensitive information, we have three secrets:
+# 1. mysql-root-password: This secret contains the root password for MySQL.
+# 2. mysql-user-pass: This secret contains a username and password for a non-root MySQL user.
+# 3. mysql-db-url: This secret contains the name of the database to be created in MySQL.
+
+
+---
+# Deployment for MySQL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    app: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-root-password
+                  key: password
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef: 
+                  name: mysql-db-url
+                  key: database
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+
+## Deployment
+# strategy: Recreate: This means that when we update the deployment, Kubernetes will first delete the existing Pod and then create a new one. This is important for stateful applications like databases to ensure that there are no conflicts between multiple instances trying to access the same data.
+# env: environment variables for the MySQL container, pulling values from the secrets.
+# volumeMounts: This tells the container where to mount the storage defined by the PersistentVolume Claim. In this case, we mount it at /var/lib/mysql, which is the default data directory for MySQL. This ensures that all the data MySQL writes to this directory is stored on the persistent volume, allowing it to survive Pod restarts and even deletion (as long as the PV is not deleted).
+# volumes: This section defines the volumes that the Pod will use. Here, we specify that we want to use a PersistentVolumeClaim named mysql-pvc, This links our deployment to the persistent storage we set up, ensuring that our MySQL data is stored persistently.
+
+
+---
+# Service for MySQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    app: mysql
+spec: 
+  selector:
+    app: mysql
+  type: NodePort
+  ports:
+    - port: 3306
+      targetPort: 3306
+      nodePort: 30007
+
+
+## Command to run this file:
+# kubectl apply -f 6-mysql_deployment.yml
+
+## Command to check the status of the deployment
+# kubectl get deployments mysql-deployment
+
+## Command to check the status of all mysql resources
+# kubectl get all -l app=mysql
+
+## Clean up the resources created by this file
+# kubectl delete -f 6-mysql_deployment.yml
