@@ -1,0 +1,63 @@
+---
+# Backend Tier - Redis Master Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-master-deployment-be
+  labels:
+    app: guestbook
+    tier: backend
+    role: redis-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guestbook
+      tier: backend
+      role: redis-master
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: backend
+        role: redis-master
+    spec:
+      containers:
+      - name: redis-master-container
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+
+---
+# Backend Tier - Redis Master Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master-service-be
+  labels:
+    app: guestbook
+    tier: backend
+    role: redis-master
+spec:
+  selector:
+    app: guestbook
+    tier: backend
+    role: redis-master
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+
+## command to run this file
+# kubectl apply -f be-redis_master-deployment.yml
+
+## Check the deployment and service
+# kubectl get deployments -l app=guestbook,tier=backend,role=redis-master
+# kubectl get services -l app=guestbook,tier=backend,role=redis-master
+
+## Cleanup the deployment and service
+# kubectl delete -f be-redis_master-deployment.yml

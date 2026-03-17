@@ -1,0 +1,66 @@
+---
+# Backend Tier - Redis Slave Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-slave-deployment-be
+  labels:
+    app: guestbook
+    tier: backend
+    role: redis-slave
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: guestbook
+      tier: backend
+      role: redis-slave
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: backend
+        role: redis-slave
+    spec:
+      containers:
+      - name: redis-slave-container
+        image: gcr.io/google_samples/gb-redisslave:v3
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+        - name: GET_HOSTS_FROM
+          value: "dns"
+
+---
+# Backend Tier - Redis Slave Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-slave-service-be
+  labels:
+    app: guestbook
+    tier: backend
+    role: redis-slave
+spec:
+  selector:
+    app: guestbook
+    tier: backend
+    role: redis-slave
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+
+## command to run this file
+# kubectl apply -f be-redis_slave-deployment.yml
+
+## Check the deployment and service
+# kubectl get deployments -l app=guestbook,tier=backend,role=redis-slave
+# kubectl get services -l app=guestbook,tier=backend,role=redis-slave
+
+## Cleanup the deployment and service
+# kubectl delete -f be-redis_slave-deployment.yml
