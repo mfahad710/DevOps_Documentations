@@ -1,6 +1,6 @@
 # Multi-Environment CI/CD Pipeline
 
-The document explains how the multi-environment CI/CD pipeline works for the CMS Backend (crm-api, crm-acs-api) supporting Sandbox and Stage environments using separate GitLab CI YAML configurations.
+The document explains how the multi-environment CI/CD pipeline works for the Fort Backend (fort-api, fort-agi-api) supporting Sandbox and Stage environments using separate GitLab CI YAML configurations.
 
 We maintain two environments:
 - Sandbox
@@ -76,25 +76,25 @@ sonarqube_scan:
 
 #----------------Build and Deploy Jobs------------------#
 
-#--------crm-acs-api Build and Deploy--------#
-crm-acs-api:
+#--------fort-agi-api Build and Deploy--------#
+fort-agi-api:
   stage: build_deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
-        - crm-acs-api/**/*
-        - cms-commons/**/*
-        - cms-dao/**/*
+        - fort-agi-api/**/*
+        - fort-commons/**/*
+        - fort-dao/**/*
       when: on_success
     - when: never
   tags:
     - <Runner_Tag>
   image: maven-jdk17
   environment:
-    name: crm-acs-api-sandbox
+    name: fort-agi-api-sandbox
   script:
-    - echo "Building crm-acs-api..."
-    - mvn clean install -pl crm-acs-api -am -DskipTests
+    - echo "Building fort-agi-api..."
+    - mvn clean install -pl fort-agi-api -am -DskipTests
     - echo "Prepare SSH key"
     - echo "$SSH_KEY" > key.pem
     - chmod 600 key.pem
@@ -102,46 +102,46 @@ crm-acs-api:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $SANDBOX_SSH_SERVER >> ~/.ssh/known_hosts
     - echo "Copy the jar file to the Sandbox server"
-    - scp -o IdentitiesOnly=yes -i key.pem crm-acs-api/target/crm-acs-api.jar $SSH_USER@$SANDBOX_SSH_SERVER:/home/$SSH_USER/services-jars/crm-acs-api/
+    - scp -o IdentitiesOnly=yes -i key.pem fort-agi-api/target/fort-agi-api.jar $SSH_USER@$SANDBOX_SSH_SERVER:/home/$SSH_USER/services-jars/fort-agi-api/
     - echo "Deployment on Sandbox Server"
     - |
       ssh -o IdentitiesOnly=yes -i key.pem $SSH_USER@$SANDBOX_SSH_SERVER << 'EOF'
-      cd /home/$SSH_USER/services-jars/crm-acs-api/
-      if [ -f crm-acs-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
-      cd /app/services/crm-acs-api
+      cd /home/$SSH_USER/services-jars/fort-agi-api/
+      if [ -f fort-agi-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
+      cd /app/services/fort-agi-api
       timestamp=$(date +'%d%b%Y%H%M')
-      if [ -f crm-acs-api.jar ]; then mv crm-acs-api.jar backups/Sandbox-crm-acs-api-$timestamp.jar; fi
-      mv /home/$SSH_USER/services-jars/crm-acs-api/crm-acs-api.jar .
-      systemctl restart crm-acs-api.service
+      if [ -f fort-agi-api.jar ]; then mv fort-agi-api.jar backups/Sandbox-fort-agi-api-$timestamp.jar; fi
+      mv /home/$SSH_USER/services-jars/fort-agi-api/fort-agi-api.jar .
+      systemctl restart fort-agi-api.service
       EOF
   artifacts:
     paths:
-      - crm-acs-api/target/crm-acs-api.jar
-      - crm-acs-api/application.yml
+      - fort-agi-api/target/fort-agi-api.jar
+      - fort-agi-api/application.yml
     expire_in: 1 week
   allow_failure: false
 
-#--------crm-api Build and Deploy--------#
-crm-api:
+#--------fort-api Build and Deploy--------#
+fort-api:
   stage: build_deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
-        - crm-api/**/*
-        - cms-commons/**/*
-        - cms-dao/**/*
-        - cms-validators/**/*
-        - cms-model/**/*
+        - fort-api/**/*
+        - fort-commons/**/*
+        - fort-dao/**/*
+        - fort-validators/**/*
+        - fort-model/**/*
       when: on_success
     - when: never
   tags:
     - <Runner_Tag>
   image: maven-jdk17
   environment:
-    name: crm-api-sandbox
+    name: fort-api-sandbox
   script:
-    - echo "Building crm-api..."
-    - mvn clean install -pl crm-api -am -DskipTests
+    - echo "Building fort-api..."
+    - mvn clean install -pl fort-api -am -DskipTests
     - echo "Prepare SSH key"
     - echo "$SSH_KEY" > key.pem
     - chmod 600 key.pem
@@ -149,22 +149,22 @@ crm-api:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $SANDBOX_SSH_SERVER >> ~/.ssh/known_hosts
     - echo "Copy the jar file to the Sandbox server"
-    - scp -o IdentitiesOnly=yes -i key.pem crm-api/target/crm-api.jar $SSH_USER@$SANDBOX_SSH_SERVER:/home/$SSH_USER/services-jars/crm-api/
+    - scp -o IdentitiesOnly=yes -i key.pem fort-api/target/fort-api.jar $SSH_USER@$SANDBOX_SSH_SERVER:/home/$SSH_USER/services-jars/fort-api/
     - echo "Deployment on Sandbox Server"
     - |
       ssh -o IdentitiesOnly=yes -i key.pem $SSH_USER@$SANDBOX_SSH_SERVER << 'EOF'
-      cd /home/$SSH_USER/services-jars/crm-api/
-      if [ -f crm-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
-      cd /app/services/crm-api
+      cd /home/$SSH_USER/services-jars/fort-api/
+      if [ -f fort-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
+      cd /app/services/fort-api
       timestamp=$(date +'%d%b%Y%H%M')
-      if [ -f crm-api.jar ]; then mv crm-api.jar backups/Sandbox-crm-api-$timestamp.jar; fi
-      mv /home/$SSH_USER/services-jars/crm-api/crm-api.jar .
-      systemctl restart crm-api.service
+      if [ -f fort-api.jar ]; then mv fort-api.jar backups/Sandbox-fort-api-$timestamp.jar; fi
+      mv /home/$SSH_USER/services-jars/fort-api/fort-api.jar .
+      systemctl restart fort-api.service
       EOF
   artifacts:
     paths:
-      - crm-api/target/crm-api.jar
-      - crm-api/application.yml
+      - fort-api/target/fort-api.jar
+      - fort-api/application.yml
     expire_in: 1 week
   allow_failure: false
 
@@ -175,10 +175,10 @@ slack_notify:
   tags:
     - <Runner_Tag>
   needs:
-    - job: crm-acs-api
+    - job: fort-agi-api
       optional: true
       artifacts: false
-    - job: crm-api
+    - job: fort-api
       optional: true
       artifacts: false
   rules:
@@ -198,7 +198,7 @@ slack_notify:
       echo "Failed jobs: $jobs_failed"
       payload=$(cat <<EOF
       {
-        "text": "*CMS Backend Sandbox Pipeline Notification* \n\n
+        "text": "*fort Backend Sandbox Pipeline Notification* \n\n
         *Project*: <${CI_PROJECT_NAME}> \n
         *Pipeline:* <${CI_PIPELINE_URL}|#${CI_PIPELINE_ID}> \n
         *Branch:* ${CI_COMMIT_REF_NAME}\n
@@ -228,26 +228,26 @@ stages:
 
 #----------------Build and Deploy Jobs------------------#
 
-#--------crm-acs-api Build and Deploy--------#
-crm-acs-api:
+#--------fort-agi-api Build and Deploy--------#
+fort-agi-api:
   stage: build_deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "manual" || $CI_PIPELINE_SOURCE == "web"'
       changes:
-        - crm-acs-api/**/*
-        - cms-commons/**/*
-        - cms-dao/**/*
+        - fort-agi-api/**/*
+        - fort-commons/**/*
+        - fort-dao/**/*
       when: on_success
     - when: never
   tags:
     - <Runner_Tag>
   image: maven-jdk17
   environment:
-    name: crm-acs-api-stage
+    name: fort-agi-api-stage
   script:
-    - echo "Building crm-acs-api..."
-    - mvn clean install -pl crm-acs-api -am -DskipTests
-    - echo "Deploying crm-acs-api..."
+    - echo "Building fort-agi-api..."
+    - mvn clean install -pl fort-agi-api -am -DskipTests
+    - echo "Deploying fort-agi-api..."
     - echo "Prepare SSH key"
     - echo "$SSH_KEY" > key.pem
     - chmod 600 key.pem
@@ -255,46 +255,46 @@ crm-acs-api:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $STAGE_SSH_SERVER >> ~/.ssh/known_hosts
     - echo "Copy the jar file to the Stage server"
-    - scp -o IdentitiesOnly=yes -i key.pem crm-acs-api/target/crm-acs-api.jar $SSH_USER@$STAGE_SSH_SERVER:/home/$SSH_USER/services-jars/crm-acs-api/
+    - scp -o IdentitiesOnly=yes -i key.pem fort-agi-api/target/fort-agi-api.jar $SSH_USER@$STAGE_SSH_SERVER:/home/$SSH_USER/services-jars/fort-agi-api/
     - echo "SSH into server and perform deployment steps"
     - |
       ssh -o IdentitiesOnly=yes -i key.pem $SSH_USER@$STAGE_SSH_SERVER << 'EOF'
-      cd /home/$SSH_USER/services-jars/crm-acs-api/
-      if [ -f crm-acs-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
-      cd /app/services/crm-acs-api
+      cd /home/$SSH_USER/services-jars/fort-agi-api/
+      if [ -f fort-agi-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
+      cd /app/services/fort-agi-api
       timestamp=$(date +'%d%b%Y%H%M')
-      if [ -f crm-acs-api.jar ]; then mv crm-acs-api.jar backups/Stage-crm-acs-api-$timestamp.jar; fi
-      mv /home/$SSH_USER/services-jars/crm-acs-api/crm-acs-api.jar .
-      systemctl restart crm-acs-api.service
+      if [ -f fort-agi-api.jar ]; then mv fort-agi-api.jar backups/Stage-fort-agi-api-$timestamp.jar; fi
+      mv /home/$SSH_USER/services-jars/fort-agi-api/fort-agi-api.jar .
+      systemctl restart fort-agi-api.service
       EOF
   artifacts:
     paths:
-      - crm-acs-api/target/crm-acs-api.jar
+      - fort-agi-api/target/fort-agi-api.jar
     expire_in: 1 week
   allow_failure: false
 
-#--------crm-api Build and Deploy--------#
-crm-api:
+#--------fort-api Build and Deploy--------#
+fort-api:
   stage: build_deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "manual" || $CI_PIPELINE_SOURCE == "web"'
       changes:
-        - crm-api/**/*
-        - cms-commons/**/*
-        - cms-dao/**/*
-        - cms-validators/**/*
-        - cms-model/**/*
+        - fort-api/**/*
+        - fort-commons/**/*
+        - fort-dao/**/*
+        - fort-validators/**/*
+        - fort-model/**/*
       when: on_success
     - when: never
   tags:
     - <Runner_Tag>
   image: maven-jdk17
   environment:
-    name: crm-api-stage
+    name: fort-api-stage
   script:
-    - echo "Building crm-api..."
-    - mvn clean install -pl crm-api -am -DskipTests
-    - echo "Deploying crm-api..."
+    - echo "Building fort-api..."
+    - mvn clean install -pl fort-api -am -DskipTests
+    - echo "Deploying fort-api..."
     - echo "Prepare SSH key"
     - echo "$SSH_KEY" > key.pem
     - chmod 600 key.pem
@@ -302,21 +302,21 @@ crm-api:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $STAGE_SSH_SERVER >> ~/.ssh/known_hosts
     - echo "Copy the jar file to the Stage server and restart the service"
-    - scp -o IdentitiesOnly=yes -i key.pem crm-api/target/crm-api.jar $SSH_USER@$STAGE_SSH_SERVER:/home/$SSH_USER/services-jars/crm-api/
+    - scp -o IdentitiesOnly=yes -i key.pem fort-api/target/fort-api.jar $SSH_USER@$STAGE_SSH_SERVER:/home/$SSH_USER/services-jars/fort-api/
     - echo "SSH into server and perform deployment steps"
     - |
       ssh -o IdentitiesOnly=yes -i key.pem $SSH_USER@$STAGE_SSH_SERVER << 'EOF'
-      cd /home/$SSH_USER/services-jars/crm-api/
-      if [ -f crm-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
-      cd /app/services/crm-api
+      cd /home/$SSH_USER/services-jars/fort-api/
+      if [ -f fort-api.jar ]; then echo "Latest jar file present"; else exit 1 ; fi
+      cd /app/services/fort-api
       timestamp=$(date +'%d%b%Y%H%M')
-      if [ -f crm-api.jar ]; then mv crm-api.jar backups/Stage-crm-api-$timestamp.jar; fi
-      mv /home/$SSH_USER/services-jars/crm-api/crm-api.jar .
-      systemctl restart crm-api.service
+      if [ -f fort-api.jar ]; then mv fort-api.jar backups/Stage-fort-api-$timestamp.jar; fi
+      mv /home/$SSH_USER/services-jars/fort-api/fort-api.jar .
+      systemctl restart fort-api.service
       EOF
   artifacts:
     paths:
-      - crm-api/target/crm-api.jar
+      - fort-api/target/fort-api.jar
     expire_in: 1 week
   allow_failure: false
 
@@ -327,10 +327,10 @@ slack_notify:
   tags:
     - <Runner_Tag>
   needs:
-    - job: crm-acs-api
+    - job: fort-agi-api
       optional: true
       artifacts: false
-    - job: crm-api
+    - job: fort-api
       optional: true
       artifacts: false
   rules:
@@ -350,7 +350,7 @@ slack_notify:
       echo "Failed jobs: $jobs_failed"
       payload=$(cat <<EOF
       {
-        "text": "*CMS Backend Stage Pipeline Notification* \n\n
+        "text": "*fort Backend Stage Pipeline Notification* \n\n
         *Project*: <${CI_PROJECT_NAME}> \n
         *Pipeline:* <${CI_PIPELINE_URL}|#${CI_PIPELINE_ID}> \n
         *Branch:* ${CI_COMMIT_REF_NAME}\n
