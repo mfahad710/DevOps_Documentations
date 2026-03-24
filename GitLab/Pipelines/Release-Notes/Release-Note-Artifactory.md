@@ -215,7 +215,7 @@ Notify_Dev_Release_Note:
       -S from="$FROM_EMAIL" \
       "$TO_EMAIL"
 
-  - echo "Release Note Review email sent to OpenACS Dev"
+  - echo "Release Note Review email sent to Develper"
 
 # -------- Approval Stage (Manual Release Note Approval Gate ) --------
 Review_Release_Note:
@@ -255,7 +255,7 @@ send_release_note:
       Project: ${CI_PROJECT_NAME}
       
       Thanks,
-      OpenACS DevOps Team"
+      DevOps Team"
 
       echo -e "${EMAIL_BODY}" | mailx -v \
         -s "New Release for Production - ${LATEST_TAG} ($(date +'%Y-%m-%d %H:%M'))" \
