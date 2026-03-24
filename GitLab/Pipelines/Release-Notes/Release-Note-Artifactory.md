@@ -1,10 +1,10 @@
-# Release Pipeline
+# Release Pipeline - Artifactory
 
 The Document explains the workflow, stages, and job functions of the automated Production Release Pipeline in GitLab.
 
 Pipeline fully automates:
 - Building JARs
-- Auto-tag bumping
+- Creating Auto-tag
 - Creating GitLab Releases
 - Attaching artifacts (JARs) to Release Notes
 - Developer approval workflow
@@ -72,7 +72,7 @@ Create_Auto_Tag:
 
       # --- Create new tag ---
       REF=${REF:-$CI_COMMIT_SHA}
-      MESSAGE="Automated tag bump from ${LATEST_TAG} to ${NEW_TAG}"
+      MESSAGE="Automated tag from ${LATEST_TAG} to ${NEW_TAG}"
 
       echo "Creating tag ${NEW_TAG} from ref ${REF}"
       curl --fail --show-error --silent --request POST --header "PRIVATE-TOKEN: $GITLAB_PAT_TOKEN" --form "tag_name=${NEW_TAG}" --form "ref=${REF}" --form "message=${MESSAGE}" "http://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/repository/tags"
