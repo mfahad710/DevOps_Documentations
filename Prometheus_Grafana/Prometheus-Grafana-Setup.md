@@ -227,6 +227,150 @@ Grafana has ready-made dashboards for Node Exporter.
 -   Click Load, then select your Prometheus data source.
 -   Click **Import**.
 
+## Systemd Exporter
+
+`systemd_exporter` is a Prometheus exporter that collects metrics about systemd units such as:
+
+- Service status (active, failed, inactive)
+- Service start time
+- Task counts
+- Unit states
+
+These metrics help monitor system services like:
+
+- nginx
+- docker
+- ssh
+- custom application services
+
+Default metrics endpoint:
+
+```bash
+http://SERVER_IP:9558/metrics
+```
+
+Download systemd_exporter
+
+```bash
+cd /tmp
+wget https://github.com/prometheus-community/systemd_exporter/releases/latest/download/systemd_exporter-linux-amd64.tar.gz
+tar -xvf systemd_exporter-linux-amd64.tar.gz
+cd systemd_exporter-linux-amd64
+```
+
+Move the exporter binary to the system path.
+
+```bash
+sudo mv systemd_exporter /usr/local/bin/
+sudo chmod +x /usr/local/bin/systemd_exporter
+```
+
+Verify:
+
+```bash
+systemd_exporter --version
+```
+
+Create Service User, for security, run the exporter as a dedicated user.
+
+```bash
+sudo useradd --no-create-home --shell /bin/false systemd_exporter
+```
+
+Create the service file
+
+```bash
+sudo nano /etc/systemd/system/systemd_exporter.service
+```
+
+Add the following configuration:
+
+```bash
+[Unit]
+Description=Prometheus Systemd Exporter
+After=network.target
+
+[Service]
+User=systemd_exporter
+Group=systemd_exporter
+Type=simple
+ExecStart=/usr/local/bin/systemd_exporter --web.listen-address=:9558
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload systemd and start the service.
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable systemd_exporter
+sudo systemctl start systemd_exporter
+sudo systemctl status systemd_exporter
+```
+
+Check metrics endpoint:
+
+```bash
+curl http://localhost:9558/metrics
+```
+
+If working correctly, metrics will be displayed
+
+Configure Prometheus
+
+Edit the Prometheus configuration file:
+
+```bash
+sudo nano /etc/prometheus/prometheus.yml
+```
+
+Add the following job:
+```bash
+scrape_configs:
+  - job_name: 'systemd_exporter'
+    static_configs:
+      - targets: ['SERVER_IP:9558']
+```
+
+Restart Prometheus:
+
+```bash
+sudo systemctl restart prometheus
+```
+
+Verify in Prometheus UI:
+
+```bash
+http://PROMETHEUS_SERVER:9090/targets
+```
+
+Monitoring Specific Services (Optional)
+
+To monitor only selected services, modify the service file.
+
+Edit:
+
+```bash
+sudo nano /etc/systemd/system/systemd_exporter.service
+```
+
+Update ExecStart:
+
+```bash
+ExecStart=/usr/local/bin/systemd_exporter \
+  --systemd.collector.unit-whitelist="nginx.service|docker.service|ssh.service"
+```
+
+Reload
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart systemd_exporter
+```
+
 ## Grafana
 
 Import the GPG key:
