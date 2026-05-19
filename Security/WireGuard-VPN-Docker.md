@@ -255,11 +255,23 @@ Configure the following **Inbound Rules** on your EC2 Security Group:
  
 ### Connecting a Device
  
-**Desktop (Windows/macOS/Linux):**
+**Desktop (Windows/macOS):**
 1. Download the `.conf` file from the Web UI
 2. Open WireGuard app → **Import tunnel from file**
 3. Toggle the tunnel **ON**
- 
+
+**KDE Desktop**
+1. Install wireguard
+```bash
+sudo dnf install wireguard-tools
+```
+
+2. Import file through Network Manager CLI (nmcli)
+```bash
+sudo nmcli connection import type wireguard file /path/to/your-config.conf
+sudo nmcli connection import type wireguard file ~/Documents/WireGuard/dev-vpn.conf
+```
+
 **Mobile (iOS/Android):**
 1. Click the **QR code icon** next to your client in the Web UI
 2. Open WireGuard app → **Add a tunnel → Scan QR code**
