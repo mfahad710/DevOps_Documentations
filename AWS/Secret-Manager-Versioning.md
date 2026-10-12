@@ -2,7 +2,7 @@
 
 ## Purpose
 
-AWS Secrets Manager automatically manages `AWSCURRENT` / `AWSPREVIOUS` staging labels, but only retains one step of history by default. This solution adds an automated **custom labeling layer** on top of that, giving every secret update a permanent, sequential, human-readable version marker (`v-1`, `v-2`, `v-3`, ...) for audit tracking and manual rollback, without touching how `AWSCURRENT`/`AWSPREVIOUS` already work.
+AWS Secrets Manager automatically manages `AWSCURRENT` / `AWSPREVIOUS` staging labels, but only retains one step of history by default. This solution adds an automated **custom labeling layer** on top of that, giving every secret update a permanent, sequential, human-readable version marker (`v1`, `v2`, `v3`, ...) for audit tracking and manual rollback, without touching how `AWSCURRENT`/`AWSPREVIOUS` already work.
 
 ## Architecture
 
@@ -19,7 +19,7 @@ Secret value changes (PutSecretValue / UpdateSecret)
    AWS Lambda function  (finds AWSCURRENT version → attaches next sequential custom label → prunes oldest if near the cap)
         │
         ▼
-  Secret now has both AWSCURRENT and a permanent v-N label on the same version
+  Secret now has both AWSCURRENT and a permanent vN label on the same version
 ```
 
 **Why CloudTrail is in the middle:** Secrets Manager does not emit events to `EventBridge` natively, every API call is logged by CloudTrail as a management event, and `EventBridge` rules match against those CloudTrail log entries. `PutSecretValue` and `UpdateSecret` are captured by an account's default CloudTrail activity automatically.
@@ -32,7 +32,7 @@ EventBridge provides simple and consistent ways to ingest, filter, transform, an
 **Event buses** are well-suited for routing events from many sources to many targets, with optional transformation of events prior to delivery to a target.
 
 ### Setting Up EventBridge for AWS Secrets Manager Versioning
-**Goal:** Trigger a Lambda function automatically whenever a secret's value is updated, so the Lambda can attach a custom staging label (e.g. an incrementing `v-N`) to the version that just became `AWSCURRENT`, for audit and rollback tracking.
+**Goal:** Trigger a Lambda function automatically whenever a secret's value is updated, so the Lambda can attach a custom staging label (e.g. an incrementing `vN`) to the version that just became `AWSCURRENT`, for audit and rollback tracking.
 
 **Important:** Secrets Manager does not send events to EventBridge natively. Every API call is logged by CloudTrail, and EventBridge matches on those CloudTrail log entries. `PutSecretValue`, `UpdateSecret` are captured by an account's default CloudTrail activity automatically, no trail needs to be manually created for this to work.
 
@@ -77,7 +77,7 @@ Notes on what was deliberately excluded and why:
 **Target:** Lambda function `dev-secrets-manager-versioning-lambda`, invoked via a resource-based permission on the function (auto-added when the target is set through the console) and an EventBridge-generated IAM role (`Amazon_EventBridge_Invoke_Lambda_<id>`) used to authorize the invoke call.
 
 ## Lambda Function
-**Goal:** A Lambda function, invoked by the EventBridge rule `dev-secret-manager-versioning-EBrule`, that attaches a custom staging label (e.g. `v-N`) to whichever version currently holds `AWSCURRENT`, whenever a secret's value changes (`PutSecretValue` or `UpdateSecret`). 
+**Goal:** A Lambda function, invoked by the EventBridge rule `dev-secret-manager-versioning-EBrule`, that attaches a custom staging label (e.g. `vN`) to whichever version currently holds `AWSCURRENT`, whenever a secret's value changes (`PutSecretValue` or `UpdateSecret`). 
 
 `AWSCURRENT` itself is applied automatically by Secrets Manager on every write, this function only manages the custom label layer on top of it.
 
@@ -119,7 +119,7 @@ from botocore.exceptions import ClientError
 
 secretsmanager = boto3.client("secretsmanager")
 
-LABEL_PATTERN = re.compile(r"^v-(\d+)$")
+LABEL_PATTERN = re.compile(r"^v(\d+)$")
 CUSTOM_LABEL_SOFT_CAP = 15   # prune oldest custom label at this count (hard AWS limit is 20 total per secret)
 
 
@@ -148,7 +148,7 @@ def lambda_handler(event, context):
         return {"statusCode": 200, "body": "no-op: already labeled"}
 
     next_n = get_next_label_number(versions)
-    new_label = f"v-{next_n}"
+    new_label = f"v{next_n}"
 
     prune_if_needed(secret_arn, versions)
     attach_label(secret_arn, new_label, current_version_id)
@@ -197,10 +197,10 @@ def prune_if_needed(secret_arn, versions):
     if len(custom_labels) < CUSTOM_LABEL_SOFT_CAP:
         return
 
-    # sort numerically (not lexicographically — "v-10" < "v-2" as strings, which is wrong)
+    # sort numerically (not lexicographically — "v10" < "v2" as strings, which is wrong)
     custom_labels.sort(key=lambda x: x[0])
     oldest_n, oldest_version_id = custom_labels[0]
-    oldest_label = f"v-{oldest_n}"
+    oldest_label = f"v{oldest_n}"
 
     print(f"At {len(custom_labels)} custom labels; pruning oldest: {oldest_label} from {oldest_version_id}")
     try:
@@ -226,8 +226,8 @@ def attach_label(secret_arn, label, target_version_id):
 EventBridge Rule (`dev-secret-manager-versioning-EBrule`) → **Targets tab** → set **target function** to `dev-secret-manager-versioning-lambda` → Update
 
 > *Notes*  
-> **Labeling scheme:** sequential, never reused — `v-1`, `v-2`, `v-3`, ... `v-N`.  
-> **Custom label cap:** Secrets Manager hard-caps staging labels at **20 per secret**, shared across all versions (`AWSCURRENT`/`AWSPENDING`/`AWSPREVIOUS` count toward this). The Lambda prunes the oldest custom label once the count reaches a soft cap of **15**, leaving headroom under the hard limit. Pruned numbers are never reused — if `v-1` is pruned, the next new label is still the true running max + 1, not `v-1` again.
+> **Labeling scheme:** sequential, never reused — `v1`, `v2`, `v3`, ... `vN`.  
+> **Custom label cap:** Secrets Manager hard-caps staging labels at **20 per secret**, shared across all versions (`AWSCURRENT`/`AWSPENDING`/`AWSPREVIOUS` count toward this). The Lambda prunes the oldest custom label once the count reaches a soft cap of **15**, leaving headroom under the hard limit. Pruned numbers are never reused — if `v1` is pruned, the next new label is still the true running max + 1, not `v1` again.
 
 ## Rollback Procedure
 
@@ -237,8 +237,8 @@ Move `AWSCURRENT` back to the version holding an earlier label:
 aws secretsmanager update-secret-version-stage \
   --secret-id dev/ssh-keys \
   --version-stage AWSCURRENT \
-  --move-to-version-id <VersionId of the older v-N label> \
+  --move-to-version-id <VersionId of the older vN label> \
   --remove-from-version-id <current AWSCURRENT VersionId>
 ```
 
-The old (bad) version isn't deleted, it's demoted, and its own `v-N` label stays intact for reference.
+The old (bad) version isn't deleted, it's demoted, and its own `vN` label stays intact for reference.
