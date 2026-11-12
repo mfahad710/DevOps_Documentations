@@ -86,11 +86,31 @@ sudo apt install postgresql-16-cron
 sudo dnf install pg_cron_16
 ```
 
+Install `pg_cron` on the **Amazon Linux 2023** server
+```bash
+sudo dnf install -y gcc make git
+sudo dnf install -y postgresql16-server-devel
+
+
+cd /tmp
+git clone https://github.com/citusdata/pg_cron.git
+cd pg_cron
+
+make PG_CONFIG=/usr/bin/pg_config
+sudo make PG_CONFIG=/usr/bin/pg_config install
+ls -l /usr/share/pgsql/extension/pg_cron*
+```
+
 Enable it in `postgresql.conf`
 
 In Ubuntu
 ```bash
 nano /etc/postgresql/16/main/postgresql.conf
+```
+
+In Amazon Linux 2023
+```bash
+nano /var/lib/pgsql/data/postgresql.conf
 ```
 
 Add the following
@@ -119,6 +139,28 @@ SELECT cron.schedule(
     'purge_pod_card_vault',
     '0 2 * * *',                              -- every day at 02:00
     $$CALL public.purge_pod_card_vault(2, 1000, 10000, 0)$$);
+```
+
+If we want to create in specific database:
+```bash
+-- Create job in dev_db using dev-user
+SELECT cron.schedule_in_database(
+    'purge_pod_card_vault',
+    '0 2 * * *',
+    $$CALL neem.purge_pod_card_vault(2, 1000, 10000, 0)$$,
+    'dev_db',
+    'dev-user'
+);
+
+
+-- Craete job in stg_db using stg-user
+SELECT cron.schedule_in_database(
+    'purge_pod_card_vault',
+    '0 2 * * *',
+    $$CALL neem.purge_pod_card_vault(2, 1000, 10000, 0)$$,
+    'stg_db',
+    'stg-user'
+)
 ```
 
 Verify
